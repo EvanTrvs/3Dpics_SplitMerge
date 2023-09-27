@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+*.db
+/3DpicsSplit&Merge/.vs/3DpicsSplit&Merge/v17
+/3DpicsSplit&Merge/.vs/3DpicsSplit&Merge/v17/Browse.VC.opendb

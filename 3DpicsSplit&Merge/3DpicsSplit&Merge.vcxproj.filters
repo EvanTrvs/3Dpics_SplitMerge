@@ -14,4 +14,9 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="tst2.cpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>
