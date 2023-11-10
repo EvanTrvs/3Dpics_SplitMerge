@@ -151,7 +151,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CGrapheColore.cpp" />
+    <ClCompile Include="CGraphesCreator.cpp" />
+    <ClCompile Include="COperationsSurGraphes.cpp" />
+    <ClCompile Include="CSplitOperation.cpp" />
     <ClCompile Include="GitHub_SplitAndMerge.cpp" />
+    <ClCompile Include="SplitAndMerge.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CException.h" />
+    <ClInclude Include="CFragment.h" />
+    <ClInclude Include="CFragment.ipp" />
+    <ClInclude Include="CGrapheColore.h" />
+    <ClInclude Include="CGraphesCreator.h" />
+    <ClInclude Include="CGrayScale.h" />
+    <ClInclude Include="CGrayScale.ipp" />
+    <ClInclude Include="COperationsSurGraphes.h" />
+    <ClInclude Include="CSplitOperation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
