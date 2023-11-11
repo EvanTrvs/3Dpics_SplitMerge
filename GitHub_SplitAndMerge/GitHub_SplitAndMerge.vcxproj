@@ -170,6 +170,8 @@
     <ClInclude Include="CGrayScale.ipp" />
     <ClInclude Include="COperationsSurGraphes.h" />
     <ClInclude Include="CSplitOperation.h" />
+    <ClInclude Include="CVoxel.h" />
+    <ClInclude Include="CVoxel.ipp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -40,6 +40,25 @@ boost::adjacency_list <boost::vecS, boost::vecS, boost::directedS, CFragment, Pr
 }
 
 /************************************************************************************************************************************************
+***** GPCGETVERTICES : Accesseur en lecture de la variable alGPCGraphe																		*****
+*************************************************************************************************************************************************
+***** Entrée : Aucun Paramètre d'entrée																										*****
+***** Nécessite : Ne nécessite rien                                                                                                         *****
+***** Sortie : vector <CFragment> vFRGVertices																								*****
+***** Entraine : Returne les vertices du graphe alGPCGraphe																					*****
+************************************************************************************************************************************************/
+vector <CFragment> CGrapheColore::GPCGetVertices() {
+	BGLGraphe::vertex_iterator vInit, vEnd;
+	vector <CFragment> vFRGVertices;
+
+	for (boost::tie(vInit, vEnd) = boost::vertices(alGPCGraphe); vInit != vEnd; ++vInit) {
+		vFRGVertices.push_back(alGPCGraphe[*vInit]);
+	}
+
+	return vFRGVertices;
+}
+
+/************************************************************************************************************************************************
 ***** GPCGETGRAY : Accesseur en lecture de la variable GSLGPCGray																			*****
 *************************************************************************************************************************************************
 ***** Entrée : Aucun Paramètre d'entrée																										*****
