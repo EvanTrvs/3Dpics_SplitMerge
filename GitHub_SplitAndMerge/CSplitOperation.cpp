@@ -15,7 +15,6 @@ vector <CFragment> CSplitOperation::SOTSplitMatrice(CFragment FRGMatrice, unsign
 	unsigned int uiVolumeCube = FRGMatrice.FRGGetDimensions()[0] * FRGMatrice.FRGGetDimensions()[1] * FRGMatrice.FRGGetDimensions()[2];
 	if ((!FRGMatrice.FRGHomogeneity(uiCritereHomogeneite)) && (uiVolumeCube >= uiTailleMinCube * uiTailleMinCube*uiTailleMinCube)) {
 
-		cout << "taille : " << uiVolumeCube << endl;
 		unsigned int uiDimX = static_cast<unsigned int> (round((double)FRGMatrice.FRGGetDimensions()[0] / 2)); //Coos X milieu
 		unsigned int uiDimY = static_cast<unsigned int> (round((double)FRGMatrice.FRGGetDimensions()[1] / 2)); //Coos Y milieu
 		unsigned int uiDimZ = static_cast<unsigned int> (round((double)FRGMatrice.FRGGetDimensions()[2] / 2)); //Coos Z milieu
