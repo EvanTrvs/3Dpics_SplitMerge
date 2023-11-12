@@ -26,8 +26,8 @@ int main()
 
 	unsigned int value = 1;
 	for (unsigned int i = 0; i < uiTaille[0]; ++i) {
-		for (unsigned int j = 0; j < uiTaille[0]; ++j) {
-			for (unsigned int k = 0; k < uiTaille[0]; ++k) {
+		for (unsigned int j = 0; j < uiTaille[1]; ++j) {
+			for (unsigned int k = 0; k < uiTaille[2]; ++k) {
 				MA[i][j][k] = CGrayScale(value++);
 				if (value > 16) {
 					value = 1;
@@ -37,8 +37,8 @@ int main()
 	}
 
 	for (unsigned int i = 0; i < uiTaille[0]; ++i) {
-		for (unsigned int j = 0; j < uiTaille[0]; ++j) {
-			for (unsigned int k = 0; k < uiTaille[0]; ++k) {
+		for (unsigned int j = 0; j < uiTaille[1]; ++j) {
+			for (unsigned int k = 0; k < uiTaille[2]; ++k) {
 				std::cout << "MA[" << i << "][" << j << "][" << k << "] = CGrayScale(" << MA[i][j][k].GSLGetGray() << ");\n";
 			}
 		}
