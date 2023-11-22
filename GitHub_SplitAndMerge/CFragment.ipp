@@ -205,15 +205,29 @@ inline vector <unsigned int> CFragment::FRGGetDimensions() {
 ************************************************************************************************************************************************/
 inline bool CFragment::FRGHomogeneity(unsigned int uiDifference) {
 
-	CGrayScale CLRRef = pmaGSLFRGMultiArray[0][vuiFRGConer[0]][vuiFRGConer[1]][vuiFRGConer[2]];
+	CGrayScale GSLMini = pmaGSLFRGMultiArray[0][vuiFRGConer[0]][vuiFRGConer[1]][vuiFRGConer[2]];
+	CGrayScale GSLMax = pmaGSLFRGMultiArray[0][vuiFRGConer[0]][vuiFRGConer[1]][vuiFRGConer[2]];
 
 	for (unsigned int uiBoucle = 0; uiBoucle < vuiFRGDimension[0]; uiBoucle++) {
 		for (unsigned int uiBoucle2 = 0; uiBoucle2 < vuiFRGDimension[1]; uiBoucle2++) {
 			for (unsigned int uiBoucle3 = 0; uiBoucle3 < vuiFRGDimension[2]; uiBoucle3++) {
 
-				if (pmaGSLFRGMultiArray[0][vuiFRGConer[0] + uiBoucle][vuiFRGConer[1] + uiBoucle2][vuiFRGConer[2] + uiBoucle3].GSLLowerLimit(uiDifference) > CLRRef.GSLGetGray() ||
-					pmaGSLFRGMultiArray[0][vuiFRGConer[0] + uiBoucle][vuiFRGConer[1] + uiBoucle2][vuiFRGConer[2] + uiBoucle3].GSLUpperLimit(uiDifference) < CLRRef.GSLGetGray()) {
-					return false;
+				CGrayScale GSLRef = pmaGSLFRGMultiArray[0][vuiFRGConer[0] + uiBoucle][vuiFRGConer[1] + uiBoucle2][vuiFRGConer[2] + uiBoucle3];
+				bool bChange = false;
+
+				if (GSLMax.GSLGetGray() < GSLRef.GSLGetGray()) {
+					GSLMax = GSLRef;
+
+					if (GSLMax.GSLGetGray() - GSLMini.GSLGetGray() > uiDifference) {
+						return false;
+					}
+				}
+				else if (GSLMini.GSLGetGray() > GSLRef.GSLGetGray()) {
+					GSLMini = GSLRef;
+
+					if (GSLMax.GSLGetGray() - GSLMini.GSLGetGray() > uiDifference) {
+						return false;
+					}
 				}
 			}
 		}
