@@ -21,6 +21,9 @@ private:
 	vector <unsigned int> vuiFRGConer;
 	vector <unsigned int> vuiFRGDimension;
 
+	std::pair <unsigned int, unsigned int> puiFRGMinMax;
+	unsigned int uiFRGNum;
+
 public:
 
 	/************************************************************************************************************************************************
@@ -33,15 +36,15 @@ public:
 	************************************************************************************************************************************************/
 	CFragment();
 
-	/************************************************************************************************************************************************
-	***** CFRAGMENT : Constructeur de confort de la classe CFragment																			*****
-	*************************************************************************************************************************************************
-	***** Entrée : pmaGSLMultiArray : * boost::multi_array <CGrayScale, 3>, vuiFRGConer et vuiFRGDimension : vector <unsigned int>				*****
-	***** Nécessite : Ne nécessite rien                                                                                                         *****
-	***** Sortie : Aucun élément retourné                                                                                                       *****
-	***** Entraine : Initialise les variables avec les variables passées en paramètre															*****
-	************************************************************************************************************************************************/
-	CFragment(boost::multi_array <CGrayScale, 3> * pmaGSLMultiArray, vector <unsigned int> vuiConer, vector <unsigned int> vuiDimension);
+	/*************************************************************************************************************************************************************
+	***** CFRAGMENT : Constructeur de confort de la classe CFragment																						 *****
+	**************************************************************************************************************************************************************
+	***** Entrée : pmaCLRMultiArray : * boost::multi_array <CGrayScale, 3>, vuiFRGConer et vuiFRGDimension : vector <unsigned int> | uiFRGNum : unsigned int *****
+	***** Nécessite : Ne nécessite rien																														 *****
+	***** Sortie : Aucun élément retourné																													 *****
+	***** Entraine : Initialise les variables avec les variables passées en paramètre																		 *****
+	*************************************************************************************************************************************************************/
+	CFragment(boost::multi_array <CGrayScale, 3> * pmaGSLMultiArray, vector <unsigned int> vuiConer, vector <unsigned int> vuiDimension, unsigned int uiNum);
 
 	/************************************************************************************************************************************************
 	***** OPERATOR= : Surcharge de l'opérateur= de la classe CFragment																			*****
@@ -123,6 +126,24 @@ public:
 	************************************************************************************************************************************************/
 	vector <unsigned int> FRGGetDimensions();
 
+	std::pair<unsigned int, unsigned int> FRGGetMinMax();
+	unsigned int FRGGetMin();
+	unsigned int FRGGetMax();
+	void FRGSetMinMax(std::pair<unsigned int, unsigned int> puiMinMax);
+	void FRGSetMinMax(unsigned int uiMin, unsigned int uiMax);
+	void FRGSetMin(unsigned int uiMin);
+	void FRGSetMax(unsigned int uiMax);
+
+	/************************************************************************************************************************************************
+	***** FRGGETNUM : Accesseur en lecture de uiFRGNum																							*****
+	*************************************************************************************************************************************************
+	***** Entrée : Aucun Paramètre d'entrée																										*****
+	***** Nécessite : Ne nécessite rien																											*****
+	***** Sortie : uiFRGNum : unsigned int																										*****
+	***** Entraine : Retourne la valeur de la variable uiFRGNum																					*****
+	************************************************************************************************************************************************/
+	unsigned int FRGGetNum();
+
 	/************************************************************************************************************************************************
 	***** FRGHOMOGENEITY : Méthode de vérification de l'homogénéité de pmaGSLFRGMultiArray														*****
 	*************************************************************************************************************************************************
@@ -133,6 +154,8 @@ public:
 	************************************************************************************************************************************************/
 	bool FRGHomogeneity(unsigned int uiDifference);
 
+	std::pair<unsigned int, unsigned int> * FRGHomogeneityV2(const unsigned int uiDifference);
+
 	/************************************************************************************************************************************************
 	***** FRGDOMINANTCOLOR : Méthode retournant la couleur dominante de pmaGSLFRGMultiArray														*****
 	*************************************************************************************************************************************************
@@ -142,6 +165,12 @@ public:
 	***** Entraine : Retourne la couleur dominante du Multi-Array																				*****
 	************************************************************************************************************************************************/
 	CGrayScale FRGDominantColor();
+
+	bool IsSplitable(const unsigned int uiDim, const unsigned int uiSeuilMin);
+	std::vector<bool> IsSplitable(const unsigned int uiSeuilMin);
+
+	std::pair<unsigned int, unsigned int> FRGFindMinMax();
+	void FRGGetNewSpots(const std::vector<bool> vbSplitDim, std::vector< std::pair< std::vector<unsigned int>, std::vector<unsigned int>>> & vpvuiNewSpots);
 
 };
 

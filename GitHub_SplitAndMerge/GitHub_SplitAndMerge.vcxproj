@@ -157,6 +157,7 @@
     <ClCompile Include="CGraphesCreator.cpp" />
     <ClCompile Include="COperationsSurGraphes.cpp" />
     <ClCompile Include="CSplitOperation.cpp" />
+    <ClCompile Include="CThreadInformation.cpp" />
     <ClCompile Include="GitHub_SplitAndMerge.cpp" />
     <ClCompile Include="SplitAndMerge.cpp" />
   </ItemGroup>
@@ -170,6 +171,7 @@
     <ClInclude Include="CGrayScale.ipp" />
     <ClInclude Include="COperationsSurGraphes.h" />
     <ClInclude Include="CSplitOperation.h" />
+    <ClInclude Include="CThreadInformation.h" />
     <ClInclude Include="CVoxel.h" />
     <ClInclude Include="CVoxel.ipp" />
   </ItemGroup>
