@@ -14,7 +14,6 @@ public:
 	static void TDIIncrementCurrentThreadCount();
 
 	static unsigned int TDIGetCurrentThreadCount();
-	static void TDISetThreadLimit(unsigned int uiNumber);
 	static unsigned int TDIGetThreadLimit();
 
 };
