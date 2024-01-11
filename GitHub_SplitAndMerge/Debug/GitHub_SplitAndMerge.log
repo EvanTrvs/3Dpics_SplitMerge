@@ -1,7 +1,0 @@
-﻿  CSplitOperation.cpp
-  Info: Boost.Config is older than your compiler version - probably nothing bad will happen - but you may wish to look for an update Boost version.  Define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE to suppress this message.
-  CThreadInformation.cpp
-  SplitAndMerge.cpp
-  Info: Boost.Config is older than your compiler version - probably nothing bad will happen - but you may wish to look for an update Boost version.  Define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE to suppress this message.
-  Génération de code en cours...
-  GitHub_SplitAndMerge.vcxproj -> C:\Users\thiba\OneDrive\Bureau\4ème année\PROJET\Test_Projet\PROJET_DIFFRENTS_PARTS\Debug\GitHub_SplitAndMerge.exe
