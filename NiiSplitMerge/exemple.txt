@@ -1,0 +1,14 @@
+prepro=10,20
+split=1
+neighbourg=2
+merge=3
+
+#commentaire qui ne doit pas être pris en compte et ne doit pas poser de problème
+preproimg=true
+splitimg=true
+#commentaire qui ne doit pas être pris en compte et ne doit pas poser de problème
+
+
+mergeimg=true
+
+details=true

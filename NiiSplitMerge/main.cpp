@@ -4,6 +4,8 @@
 #include <limits>
 #include <cstring>
 #include <vector> 
+#include <fstream>
+#include <algorithm>
 #include <boost/multi_array.hpp>
 
 #include "nifti1.h"
@@ -18,7 +20,7 @@ typedef struct Parameters {
 
     //user inputs
     float           fHomogeneityCrit =0.0f;   
-    unsigned int    uiMinSize       =0;
+    unsigned int    uiMinSize       =1;
     std::string     sSourceNii;
     std::string     sOutNiiName;
     std::string     sOutNiiPath;
@@ -33,7 +35,7 @@ typedef struct Parameters {
     bool            bPreproNii  =false;
     bool            bSplitNii   =false;
     bool            bMergeNii   =true;
-    bool            bDetails    =false;
+    bool            bDetails    =true;
 } Parameters;
 
 typedef struct Times {
@@ -89,6 +91,126 @@ void seperatePathFile(std::string& sPathFile, std::string& sPath) {
     }
 }
 
+bool isValidMireFormat(const std::string& input) {
+    // Vérifier que la chaîne commence par "mire"
+    if (input.substr(0, 4) != "mire") {
+        return false;
+    }
+
+    // Vérifier que le reste de la chaîne est composé uniquement de chiffres
+    for (size_t i = 4; i < input.length(); ++i) {
+        if (!std::isdigit(input[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Fonction pour convertir une chaîne en minuscules
+void toLower(std::string& str) {
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+}
+
+// Fonction pour lire et analyser le fichier de configuration
+bool readConfigFile(const std::string& filename,
+    std::pair<unsigned int, unsigned int>& pPreProMinMax,
+    unsigned int& uiSplitStrat,
+    unsigned int& uiNeighStrat,
+    unsigned int& uiMergeStrat,
+    bool& bPreproNii,
+    bool& bSplitNii,
+    bool& bMergeNii,
+    bool& bDetails) {
+    std::ifstream configFile(filename);
+
+    if (!configFile.is_open()) {
+        std::cerr << "Erreur : Impossible d'ouvrir le fichier de configuration." << std::endl;
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(configFile, line)) {
+        // Ignorer les commentaires et les lignes vides
+        if (line.empty() || line[0] == '#' || line[0] == ';') {
+            continue;
+        }
+
+        // Convertir la ligne en minuscules pour être insensible à la casse
+        toLower(line);
+
+        std::istringstream iss(line);
+        std::string key, value;
+
+        // Extraire la clé et la valeur
+        if (std::getline(iss, key, '=') && std::getline(iss, value)) {
+            // Supprimer les espaces autour de la clé et de la valeur
+            key.erase(std::remove_if(key.begin(), key.end(), ::isspace), key.end());
+            value.erase(std::remove_if(value.begin(), value.end(), ::isspace), value.end());
+
+            // Analyser la clé et la valeur
+            if (key == "prepro") {
+                std::istringstream valueStream(value);
+                char comma;
+                if (valueStream >> pPreProMinMax.first >> comma >> pPreProMinMax.second && comma == ',') {
+                    bPreproNii = true;
+                }
+                else {
+                    std::cerr << "Erreur : Format invalide pour la clé 'prepro'." << std::endl;
+                    return false;
+                }
+            }
+            else if (key == "split") {
+                if (std::istringstream(value) >> uiSplitStrat) {
+                    bSplitNii = true;
+                }
+                else {
+                    std::cerr << "Erreur : Format invalide pour la clé 'split'." << std::endl;
+                    return false;
+                }
+            }
+            else if (key == "neighbourg") { // Note : corriger la faute de frappe "neighbourg" à "neigh"
+                if (std::istringstream(value) >> uiNeighStrat) {
+                    // ...
+                }
+                else {
+                    std::cerr << "Erreur : Format invalide pour la clé 'neighbourg'." << std::endl;
+                    return false;
+                }
+            }
+            else if (key == "merge") {
+                if (std::istringstream(value) >> uiMergeStrat) {
+                    bMergeNii = true;
+                }
+                else {
+                    std::cerr << "Erreur : Format invalide pour la clé 'merge'." << std::endl;
+                    return false;
+                }
+            }
+            else if (key == "preproimg") {
+                std::istringstream(value) >> std::boolalpha >> bPreproNii;
+            }
+            else if (key == "splitimg") {
+                std::istringstream(value) >> std::boolalpha >> bSplitNii;
+            }
+            else if (key == "mergeimg") {
+                std::istringstream(value) >> std::boolalpha >> bMergeNii;
+            }
+            else if (key == "details") {
+                std::istringstream(value) >> std::boolalpha >> bDetails;
+            }
+            else {
+                std::cerr << "Avertissement : Clé non reconnue '" << key << "'." << std::endl;
+            }
+        }
+        else {
+            std::cerr << "Erreur : Format invalide pour la ligne '" << line << "'." << std::endl;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int main(int argc, char* argv[]) {
 
     // Vérifier le nombre d'arguments
@@ -101,6 +223,7 @@ int main(int argc, char* argv[]) {
     float arg1;
     int arg2;
     std::string arg3, arg4, arg5, sOutPath;
+    unsigned int mireValue = 0;
 
     try {
         arg1 = std::stof(argv[1]);
@@ -117,8 +240,14 @@ int main(int argc, char* argv[]) {
             throw std::invalid_argument("Les valeurs des arguments 2 ne respectent pas les conditions:\nDimension minimale de decoupe [entier entre 1 et 1000]");
         }
 
+        // Vérifier si arg3 suit le format "mire" + entier
+        if (isValidMireFormat(arg3)) {
+            // Extraire l'entier à partir de la chaîne
+            mireValue = std::stoi(arg3.substr(4));
+            // Utilisez mireValue comme nécessaire
+        }
         // Vérifier que les fichiers .nii existent et ont la bonne extension
-        if (!hasExtension(arg3, ".nii") || !hasExtension(arg4, ".nii")) {
+        else if (!hasExtension(arg3, ".nii") || !hasExtension(arg4, ".nii")) {
             throw std::invalid_argument("Les fichiers images NIfTI doivent avoir l'extension '.nii'");
         }
 
@@ -132,13 +261,10 @@ int main(int argc, char* argv[]) {
                 throw std::invalid_argument("Le fichier .txt doit avoir l'extension '.txt'");
             }
         }
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         std::cerr << "Erreur : " << e.what() << std::endl;
         return 1;
     }
-
-    std::cout << arg1 << ", " << arg2 << ", " << arg3 << ", " << arg4 << ", " << sOutPath << std::endl;
 
     Times Times;
     Parameters Parameters;
@@ -150,18 +276,23 @@ int main(int argc, char* argv[]) {
     Parameters.sSettingFile = arg5;
 
     if (argc == 6) {
-        //read setting file
+        // Exemple d'utilisation
+        /*
+        std::pair<unsigned int, unsigned int> pPreProMinMax;
+        unsigned int uiSplitStrat = 0, uiNeighStrat = 0, uiMergeStrat = 0;
+        bool bPreproNii = false, bSplitNii = false, bMergeNii = false, bDetails = false;
 
-        //si tout est bon :
-        //Parameters.tPreProMinMax =
-        //Parameters.uiSplitStrat =
-        //Parameters.uiNeighStrat =
-        //Parameters.uiMergeStrat =
-
-        //Parameters.bPreproNii = false;
-        //Parameters.bSplitNii = false;
-        //Parameters.bMergeNii = true;
-        //Parameters.bDetails = false;
+        if (readConfigFile("exemple.txt", pPreProMinMax, uiSplitStrat, uiNeighStrat, uiMergeStrat, bPreproNii, bSplitNii, bMergeNii, bDetails)) {
+            // Utiliser les valeurs lues
+            std::cout << "prepro: " << pPreProMinMax.first << ", " << pPreProMinMax.second << std::endl;
+            std::cout << "split: " << uiSplitStrat << std::endl;
+            std::cout << "neigh: " << uiNeighStrat << std::endl;
+            std::cout << "merge: " << uiMergeStrat << std::endl;
+            std::cout << "bPreproNii: " << std::boolalpha << bPreproNii << std::endl;
+            std::cout << "bSplitNii: " << std::boolalpha << bSplitNii << std::endl;
+            std::cout << "bMergeNii: " << std::boolalpha << bMergeNii << std::endl;
+            std::cout << "bDetails: " << std::boolalpha << bDetails << std::endl;
+        }*/
     }
 
     std::cout << "[NiiSplitMerge.exe] Programme parameters configuration:"
@@ -184,7 +315,12 @@ int main(int argc, char* argv[]) {
     
     CNiftiImage* NFIsource = new CNiftiImage(Parameters.sSourceNii);
     try {       //lecture header nifti
-        NFIsource->NFIreadHeader();
+        if (mireValue == 0) {
+            NFIsource->NFIreadHeader();
+        }
+        else {
+            NFIsource->NFImireHeader(mireValue);
+        }
         std::cout << NFIsource->NFIgetHeaderInfo();
     }
     catch (const CException e) {
@@ -196,23 +332,28 @@ int main(int argc, char* argv[]) {
     try {       //lecture données nifti
         unsigned int uiDataType = NFIsource->NFIgetDataType();
 
-        if (uiDataType == 512) {  //NIFTI_TYPE_UINT8, unsigned char
-
+        if (mireValue != 0) {
+            CNiftiImageData<uint16_t>* NFImireData = new CNiftiImageData<uint16_t>(*NFIsource);
+            NFImireData->NFDgetMireData(mireValue);
+            NFIsourceData->NFDconvertDataFrom(*NFImireData);
+        }
+        else if (uiDataType == 512) {  //NIFTI_TYPE_UINT8, unsigned char
             CNiftiImageData<uint16_t>* NFIextractData = new CNiftiImageData<uint16_t>(*NFIsource);
             NFIextractData->NFDreadData();
             NFIsourceData->NFDconvertDataFrom(*NFIextractData);
         }
-        else if (uiDataType == 16) {  //float, unsigned char
-
+          else if (uiDataType == 16) {  //float, unsigned char
             CNiftiImageData<float>* NFIextractData = new CNiftiImageData<float>(*NFIsource);
             NFIextractData->NFDreadData();
             NFIsourceData->NFDconvertDataFrom(*NFIextractData);
         }
         else if (uiDataType == 4) {  //float, unsigned char
-
             CNiftiImageData<signed short>* NFIextractData = new CNiftiImageData<signed short>(*NFIsource);
             NFIextractData->NFDreadData();
             NFIsourceData->NFDconvertDataFrom(*NFIextractData);
+        }
+        else {
+            throw CException(5);
         }
     }
     catch (const CException e) {
@@ -221,7 +362,7 @@ int main(int argc, char* argv[]) {
     }
 
     try {       //preprocess
-        if (Parameters.pPreProMinMax.first == 0 || Parameters.pPreProMinMax.second == 0) {
+        if (Parameters.pPreProMinMax.first == 0 && Parameters.pPreProMinMax.second == 0) {
             NFIsourceData->NFDpreprocess({ 0, (uint16_t)NFIsourceData->NFDgetDataSize() });
             //NFIsourceData->NFDpreprocess({ 0, 10 });
         }
@@ -256,7 +397,7 @@ int main(int argc, char* argv[]) {
 
         std::cout << "[NiiSplitMerge.exe] Split Strategy parameters :"
             << "\n[NiiSplitMerge.exe]\tSplit strategy:\t\t" << std::to_string(Parameters.uiSplitStrat)
-            << "\n[NiiSplitMerge.exe]\tHomogeneity criterion:\t" << std::to_string(uiHomogeneite) << " vxl (" << Parameters.fHomogeneityCrit << "%)"
+            << "\n[NiiSplitMerge.exe]\tHomogeneity criterion:\t" << std::to_string(uiHomogeneite) << " (" << Parameters.fHomogeneityCrit << "%)"
             << "\n[NiiSplitMerge.exe]\tMinimum chunk dimension:" << std::to_string(Parameters.uiMinSize) << " vxl" << std::endl;
 
         clock_t cTempsDebut;
@@ -286,14 +427,14 @@ int main(int argc, char* argv[]) {
         std::cout << "[NiiSplitMerge.exe] Merge Strategy parameters :"
             << "\n[NiiSplitMerge.exe]\tNeighboring strategy:\t" << std::to_string(Parameters.uiNeighStrat)
             << "\n[NiiSplitMerge.exe]\tMerge strategy:\t\t" << std::to_string(Parameters.uiMergeStrat)
-            << "\n[NiiSplitMerge.exe]\tHomogeneity criterion:\t" << std::to_string(uiHomogeneite) << " vxl (" << Parameters.fHomogeneityCrit << "%)"
+            << "\n[NiiSplitMerge.exe]\tHomogeneity criterion:\t" << std::to_string(uiHomogeneite) << " (" << Parameters.fHomogeneityCrit << "%)"
             << "\n[NiiSplitMerge.exe]\tNumber of region:\t" << vFRGresult.size() << std::endl;
 
         clock_t cTempsDebut;
         cTempsDebut = clock();
 
         CGrapheCreator Gs;
-        Gs.GCRCreationGraphe(vFRGresult, uiHomogeneite, Parameters.uiMinSize, 0);
+        Gs.GCRCreationGraphe(vFRGresult, uiHomogeneite, Parameters.uiMinSize, Parameters.uiNeighStrat, Parameters.uiMergeStrat);
 
         Times.Neighboring = (double)(clock() - cTempsDebut) / CLOCKS_PER_SEC;
 

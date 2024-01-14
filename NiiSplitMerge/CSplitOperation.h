@@ -17,27 +17,27 @@ private:
 
 	std::mutex SOTMutex;
 
-	//Friend de la classe CMultiArrayOperation pour une gestion des exceptions condensé 
+	//Friend of the CMultiArrayOperation class for condensed exception handling 
 	friend class CMultiArrayOperation;
 
 private:
 	/************************************************************************************************************************************************
-	***** SOTSPLITMATRICE : Méthode de Split Classique																							*****
+	***** SOTSplitMatrice : Method for Split A Fragment																							*****
 	*************************************************************************************************************************************************
-	***** Entrée : FRGMatrice : CFragment & | CritereHomogeneite, uiSeuilMin : const unsigned int | vFRGVectorFinal : vector<CFragment> &		*****
-	***** Nécessite : La taille minimum des cubes ne peux être égale à 0                                                                        *****
-	***** Sortie : Aucun élément retourné																										*****
-	***** Entraine : Méthode de Split selon les critères passés en paramètre																	*****
+	***** Input : FRGMatrice : CFragment & | CritereHomogeneite, uiSeuilMin : const unsigned int | vFRGVectorFinal : vector<CFragment> &		*****
+	***** Precondition : uiSeuilMin need to not be null                                                                                         *****
+	***** Output : None																															*****
+	***** Effects : Split Method according to parameter requirements																			*****
 	************************************************************************************************************************************************/
 	void SOTSplitMatrice(CFragment & FRGMatrice, const unsigned int CritereHomogeneite, const unsigned int uiSeuilMin, vector<CFragment> & vFRGVectorFinal);
 
 	/********************************************************************************************************************************************************************************************
-	***** SOTSPLITMATRICETHREADS : Méthode de Split avec des Threads																														*****
+	***** SOTSplitMatriceThreads : Method for Split A Fragment																																*****
 	*********************************************************************************************************************************************************************************************
-	***** Entrée : FRGMatrice : CFragment & | CritereHomogeneite, uiSeuilMin : const unsigned int | vFRGVectorFinal : vector<CFragment> & | OptimizationByThreads : vector<std::thread> &	*****
-	***** Nécessite : La taille minimum des cubes ne peux être égale à 0																													*****
-	***** Sortie : Aucun élément retourné																																					*****
-	***** Entraine : Méthode de Split avec des Threads selon les critères passés en paramètre																								*****
+	***** Input : FRGMatrice : CFragment & | CritereHomogeneite, uiSeuilMin : const unsigned int | vFRGVectorFinal : vector<CFragment> & | OptimizationByThreads : vector<std::thread> &	*****
+	***** Precondition : uiSeuilMin need to not be null																																		*****
+	***** Output : None																																										*****
+	***** Effects : Split Method according to parameter requirements with threads																											*****
 	********************************************************************************************************************************************************************************************/
 	void SOTSplitMatriceThreads(CFragment FRGMatrice, const unsigned int CritereHomogeneite, const unsigned int uiSeuilMin, vector<CFragment> & vFRGVectorFinal, vector<std::thread> & OptimizationByThreads);
 };

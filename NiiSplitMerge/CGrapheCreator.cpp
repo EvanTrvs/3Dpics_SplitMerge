@@ -4,14 +4,16 @@
 #include "CGrapheCreator.h"
 
 /************************************************************************************************************************************************
-***** CGRAPHESCREATOR : Constructeur par défaut de la classe CGraphesCreator																*****
+***** Default Class Constructor																												*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Initialise alGPCGraphe, vvdGPCVertex_Desc et vvuiGPCConnexite à null														*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize alGPCGraphe, vvdGPCVertex_Desc and vvuiGPCConnexite to null                                                      *****
 ************************************************************************************************************************************************/
 CGrapheCreator::CGrapheCreator() {
+
+	//Initialialize variables
 	alGPCGraphe = BGLGraphe();
 
 	vvdGPCVertex_Desc = {};
@@ -19,107 +21,36 @@ CGrapheCreator::CGrapheCreator() {
 }
 
 /************************************************************************************************************************************************
-***** GCRGETGRAPHE : Accesseur en lecture de alGPCGraphe																					*****
+***** GCRGetGraphe : Reading Accessor  																										*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : alGPCGraphe : BGLGraphe																										*****
-***** Entraine : Retourne la variable alGPCGraphe																							*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Return variable alGPCGraphe																									*****
 ************************************************************************************************************************************************/
 BGLGraphe CGrapheCreator::GCRGetGraphe() {
 	return alGPCGraphe;
 }
 
-/************************************************************************************************************************************************
-***** GCRTHREADREDEF : Méthode appelé par un thread																							*****
-*************************************************************************************************************************************************
-***** Entrée : uiConnexite1, uiConnexite2 : unsigned int | puiMinMax : std::pair <unsigned int, unsigned int> 								*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Modifie le Min/Max des sommets présent dans la second connexité															*****
-************************************************************************************************************************************************/
-void CGrapheCreator::GCRThreadRedef(unsigned int uiConnexite1, unsigned int uiConnexite2, std::pair <unsigned int, unsigned int> puiMinMax) {
-
-	//Pour tous les sommets de l'autre connexité, modification de leur connexité ainsi que leurs Min/Max
-	for (unsigned int uiConnexe : vvuiGPCConnexite[uiConnexite2]) {
-
-		vvuiGPCConnexite[uiConnexite1].push_back(alGPCGraphe[vvdGPCVertex_Desc[uiConnexe]].FRGGetConnexite());
-
-		alGPCGraphe[vvdGPCVertex_Desc[uiConnexe]].FRGSetMinMax(puiMinMax);
-		alGPCGraphe[vvdGPCVertex_Desc[uiConnexe]].FRGSetConnexite(uiConnexite1);
-
-	}
-}
-
-/************************************************************************************************************************************************
-***** GCRLINKVERTICES : Méthode liant 2 fragments du graphe																					*****
-*************************************************************************************************************************************************
-***** Entrée : puiPair : std::pair<unsigned int, unsigned int>																				*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Relie les Sommets en modifiant si besoin la connexité																		*****
-************************************************************************************************************************************************/
-void CGrapheCreator::GCRLinkVertices(std::pair<unsigned int, unsigned int> puiPair) {
-
-	//Initialisation des fragments (vertex) à l'aide du stockage précédemment réalisé
-	BGLGraphe::vertex_descriptor vdFragment1 = vvdGPCVertex_Desc[puiPair.first], vdFragment2 = vvdGPCVertex_Desc[puiPair.second];
-	
-	//Détermine le Min des mins et le Max des maxs
-	std::pair <unsigned int, unsigned int> puiMinMax(min(alGPCGraphe[vdFragment1].FRGGetMin(), alGPCGraphe[vdFragment2].FRGGetMin()), max(alGPCGraphe[vdFragment1].FRGGetMax(), alGPCGraphe[vdFragment2].FRGGetMax()));
-	
-	/* Mise à jour de toute la partie connexe */
-
-	unsigned int uiConnexite1 = min (alGPCGraphe[vdFragment1].FRGGetConnexite(), alGPCGraphe[vdFragment2].FRGGetConnexite());
-	unsigned int uiConnexite2 = max (alGPCGraphe[vdFragment1].FRGGetConnexite(), alGPCGraphe[vdFragment2].FRGGetConnexite());
-
-	//Si les 2 sommets n'appartiennent pas à la même connexité
-	if (uiConnexite1 != uiConnexite2) {
-
-		//Détermine la connexité avec le plus et le moins de sommets => changement de connexité pour les moins nombreux
-		if (vvuiGPCConnexite[uiConnexite1].size() < vvuiGPCConnexite[uiConnexite2].size()) {
-			unsigned int uiConnexiteTMP = uiConnexite1;
-			uiConnexite1 = uiConnexite2;
-			uiConnexite2 = uiConnexiteTMP;
-		}
-
-		//Création d'une copie du vecteur pour éviter les interférences du thread
-		vector <unsigned int> vuiGPCConnexiteSave = vvuiGPCConnexite[uiConnexite1];
-
-		//Appel de la méthode de la classe en thread
-		std::thread ThreadConnexite = thread(&CGrapheCreator::GCRThreadRedef, this, uiConnexite1, uiConnexite2, puiMinMax);
-		
-		//Redéfinition du Min/Max des Sommets
-		for (unsigned int uiConnexe : vuiGPCConnexiteSave) {
-			alGPCGraphe[vvdGPCVertex_Desc[uiConnexe]].FRGSetMinMax(puiMinMax);
-		}
-
-		//Attente de la fin du thread
-		ThreadConnexite.join();
-	}
-
-	//Ajout de l'arc entre les 2 sommets voisins
-	boost::add_edge(vdFragment1, vdFragment2, alGPCGraphe);
-}
-
 /********************************************************************************************************************************************************
-***** LECTUREDICHOTOMIE : Fonction permettant la lecture dichotomique																				*****
+***** LectureDichotomie : Method for Reading dichotomic  																							*****
 *********************************************************************************************************************************************************
-***** Entrée : vpuivuiJonction : vector <std::pair<unsigned int, vector<unsigned int>>>	& | vuiCoos : vector <unsigned int>	| sOrientation : string	*****
-***** Nécessite : Ne nécessite rien																													*****
-***** Sortie : itvvuiVoisin : vector <std::pair<unsigned int, vector<unsigned int>>>::iterator														*****
-***** Entraine : Retourne l'itérateur du vecteur correspondant au voisin d'un voxel																	*****
+***** Input : vpuivuiJonction : vector <std::pair<unsigned int, vector<unsigned int>>> & | vuiCoos : vector <unsigned int> | sOrientation : string	*****
+***** Precondition : Nothing																														*****
+***** Output : itvvuiVoisin : vector <std::pair<unsigned int, vector<unsigned int>>>::iterator														*****
+***** Effects : Return iterator variable of voxel neighbor																							*****
 ********************************************************************************************************************************************************/
 vector <std::pair<unsigned int, vector<unsigned int>>>::iterator LectureDichotomie (vector <std::pair<unsigned int, vector<unsigned int>>> & vpuivuiJonction, vector <unsigned int> vuiCoos, string sOrientation) {
 
-	//Initialise les bornes du vecteur
+	//vector terminals initialization
 	unsigned int uiBorneInf = 0;
 	unsigned int uiBorneSup = (unsigned int)vpuivuiJonction.size();
 
-	if (uiBorneInf == uiBorneSup) { //Liste Vide
+	if (uiBorneInf == uiBorneSup) { //if the vector is empty
 		return vpuivuiJonction.end();
 	}
 
-	//Initialisation des éléments nécessaire à la recherche
+	//Initialization of element required for research
 	unsigned int uiIndice;
 	std::pair<unsigned int, vector<unsigned int>> puivuiComparaison;
 
@@ -127,130 +58,132 @@ vector <std::pair<unsigned int, vector<unsigned int>>>::iterator LectureDichotom
 	unsigned int uiSommeYZ = vuiCoos[1] + vuiCoos[2];
 	unsigned int uiSommeXY = vuiCoos[0] + vuiCoos[1];
 
-	//Pour les faces Nord et Sud
-	if (sOrientation == "North_South") { //Regard sur X et Z 
+	//For North / South Faces
+	if (sOrientation == "North_South") { //Look on X / Z
 		while (uiBorneInf != uiBorneSup) {
 
-			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Indice du milieu de la section analysé précédemment
-			puivuiComparaison = vpuivuiJonction[uiIndice]; //Valeur de ce milieu
+			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Mid-section index analyzed
+			puivuiComparaison = vpuivuiJonction[uiIndice]; //mid value
 
-			//Si les 2 valeurs sont égales => stop
+			//if 2 values are equals => stop
 			if (vpuivuiJonction[uiBorneInf].second[0] + vpuivuiJonction[uiBorneInf].second[2] == vpuivuiJonction[uiBorneSup - 1].second[0] + vpuivuiJonction[uiBorneSup - 1].second[2]) {
 				break;
 			}
 
-			/* SINON */
+			/* ELSE */
 
-			//Analyse partie Gauche
+			//Left Part Analyze
 			if (puivuiComparaison.second[0] + puivuiComparaison.second[2] > uiSommeXZ) {
 				uiBorneSup = uiIndice;
 			}
-			else { //Analyse partie Droite
+			else { //Right Part Analyze
 				uiBorneInf = uiIndice + 1;
 			}
 		}
 
-		//Possibilité d'égalité donc parcours de ces dernières
-		for (vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFinded = vpuivuiJonction.begin(); itFinded != vpuivuiJonction.end(); itFinded++) {
-			if ((*itFinded).second == vuiCoos) {
-				return itFinded;
+		//Egality possibility so visit theirs
+		for (vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFound = vpuivuiJonction.begin(); itFound != vpuivuiJonction.end(); itFound++) {
+			if ((*itFound).second == vuiCoos) {
+				
+				//when it find
+				return itFound;
 			}
 		}
 
-		//Aucun élément trouvé
+		//No element find
 		return vpuivuiJonction.end();
 	}
 
-	//Pour les faces Est et West
-	else if (sOrientation == "East_West") { //Regard sur Y et Z
+	//For East / West Faces
+	else if (sOrientation == "East_West") { //Look on Y / Z
 		while (uiBorneInf != uiBorneSup) {
 
-			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Indice du milieu de la section analysé précédemment
-			puivuiComparaison = vpuivuiJonction[uiIndice]; //Valeur de ce milieu
+			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Mid-section index analyzed
+			puivuiComparaison = vpuivuiJonction[uiIndice]; //mid value
 
-			//Si les 2 valeurs sont égales => stop
+			//if 2 values are equals => stop
 			if (vpuivuiJonction[uiBorneInf].second[1] + vpuivuiJonction[uiBorneInf].second[2] == vpuivuiJonction[uiBorneSup - 1].second[1] + vpuivuiJonction[uiBorneSup - 1].second[2]) {
 				break;
 			}
 
-			/* SINON */
+			/* ELSE */
 
-			//Analyse partie Gauche
+			//Left Part Analyze
 			if (puivuiComparaison.second[1] + puivuiComparaison.second[2] > uiSommeYZ) {
 				uiBorneSup = uiIndice;
 			}
-			else { //Analyse partie Droite
+			else { //Right Part Analyze
 				uiBorneInf = uiIndice + 1;
 			}
 		}
 
-		//Possibilité d'égalité donc parcours de ces dernières
-		for (vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFinded = vpuivuiJonction.begin(); itFinded != vpuivuiJonction.end(); itFinded++) {
-			if ((*itFinded).second == vuiCoos) {
-				return itFinded;
+		//Egality possibility so visit theirs
+		for (vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFound = vpuivuiJonction.begin(); itFound != vpuivuiJonction.end(); itFound++) {
+			if ((*itFound).second == vuiCoos) {
+				return itFound;
 			}
 		}
 
-		//Aucun élément trouvé
+		//No element find
 		return vpuivuiJonction.end();
 
 	}
 
-	//Pour les faces Behind et Front
-	else { //Regard sur X et Y
+	//For Behind et Front Faces
+	else { //Look on X / Y
 		while (uiBorneInf != uiBorneSup) {
 
 			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Indice du milieu de la section analysé précédemment
 			puivuiComparaison = vpuivuiJonction[uiIndice]; //Valeur de ce milieu
 
-			//Si les 2 valeurs sont égales => stop
+			//if 2 values are equals => stop
 			if (vpuivuiJonction[uiBorneInf].second[0] + vpuivuiJonction[uiBorneInf].second[1] == vpuivuiJonction[uiBorneSup - 1].second[0] + vpuivuiJonction[uiBorneSup - 1].second[1]) {
 				break;
 			}
 
-			/* SINON */
+			/* ELSE */
 
-			//Analyse partie Gauche
+			//Left Part Analyze
 			if (puivuiComparaison.second[0] + puivuiComparaison.second[1] > uiSommeXY) {
 				uiBorneSup = uiIndice;
 			}
-			else { //Analyse partie Droite
+			else { //Right Part Analyze
 				uiBorneInf = uiIndice + 1;
 			}
 		}
 
-		//Possibilité d'égalité donc parcours de ces dernières
-		for (vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFinded = vpuivuiJonction.begin(); itFinded != vpuivuiJonction.end(); itFinded++) {
-			if ((*itFinded).second == vuiCoos) {
-				return itFinded;
+		//Egality possibility so visit theirs
+		for (vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFound = vpuivuiJonction.begin(); itFound != vpuivuiJonction.end(); itFound++) {
+			if ((*itFound).second == vuiCoos) {
+				return itFound;
 			}
 		}
 
-		//Aucun élément trouvé
+		//No element find
 		return vpuivuiJonction.end();
 	}
 }
 
 /****************************************************************************************************************************************************************************************
-***** ECRITUREDICHOTOMIE : Fonction permettant l'écriture dichotomique																												*****
+***** EcritureDichotomie : Method for Writting dichotomic  																															*****
 *****************************************************************************************************************************************************************************************
-***** Entrée : vpuivuiJonction : vector <std::pair<unsigned int, vector<unsigned int>>>	& | puivuiNewPair : std::pair<unsigned int, vector<unsigned int>>	| sOrientation : string	*****
-***** Nécessite : Ne nécessite rien																																					*****
-***** Sortie : Ne retourne aucun élément																																			*****
-***** Entraine : Ecrit dans le vecteur le voxel (pour le retrouver grâce à la lecture)																								*****
+***** Input : vpuivuiJonction : vector <std::pair<unsigned int, vector<unsigned int>>>	& | puivuiNewPair : std::pair<unsigned int, vector<unsigned int>> | sOrientation : string	*****
+***** Precondition : Nothing																																						*****
+***** Output : None																																									*****
+***** Effects : Write in vector (parameter) informations of voxel																													*****
 ****************************************************************************************************************************************************************************************/
 void EcritureDichotomie(vector <std::pair<unsigned int, vector<unsigned int>>> & vpuivuiJonction, std::pair<unsigned int, vector<unsigned int>> puivuiNewPair, string sOrientation) {
 
-	//Initialise les bornes du vecteur
+	//vector terminals initialization
 	unsigned int uiBorneInf = 0;
 	unsigned int uiBorneSup = (unsigned int)vpuivuiJonction.size();
 
-	if (uiBorneInf == uiBorneSup) { //Liste Vide
+	if (uiBorneInf == uiBorneSup) { //if the vector is empty
 		vpuivuiJonction.push_back(puivuiNewPair);
 		return;
 	}
 
-	//Initialisation des éléments nécessaire à la recherche
+	//Elements initialization for research
 	unsigned int uiIndice;
 	std::pair<unsigned int, vector<unsigned int>> puivuiComparaison;
 
@@ -258,84 +191,85 @@ void EcritureDichotomie(vector <std::pair<unsigned int, vector<unsigned int>>> &
 	unsigned int uiSommeYZ = puivuiNewPair.second[1] + puivuiNewPair.second[2];
 	unsigned int uiSommeXY = puivuiNewPair.second[0] + puivuiNewPair.second[1];
 
-	//Pour les faces Nord et Sud
-	if (sOrientation == "North_South") { //regard sur X et Z 
+	//North / South Faces
+	if (sOrientation == "North_South") { //Look on X and Z 
 		while (uiBorneInf != uiBorneSup) {
 
-			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Indice du milieu de la section analysé précédemment
-			puivuiComparaison = vpuivuiJonction[uiIndice]; //Valeur de ce milieu
+			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Mid-section index analyzed
+			puivuiComparaison = vpuivuiJonction[uiIndice]; //mid value
 
-			//Future Ecriture dans la partie Gauche
+			//Next Writting in the left part
 			if (puivuiComparaison.second[0] + puivuiComparaison.second[2] > uiSommeXZ) {
 				uiBorneSup = uiIndice;
 			}
-			else { //Future Ecriture dans la partie Droite
+			else { //Next Writting in the right part
 				uiBorneInf = uiIndice + 1;
 			}
 		}
 
-		//Ecriture
+		//Writting
 		vpuivuiJonction.insert(vpuivuiJonction.begin() + uiBorneInf, puivuiNewPair);
 	}
 
-	//Pour les faces Est et West
-	else if (sOrientation == "East_West") {//Regard sur Y et Z
+	//East / West Faces
+	else if (sOrientation == "East_West") {//Look on Y / Z
 		while (uiBorneInf != uiBorneSup) {
 
-			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Indice du milieu de la section analysé précédemment
-			puivuiComparaison = vpuivuiJonction[uiIndice]; //Valeur de ce milieu
+			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Mid-section index analyzed
+			puivuiComparaison = vpuivuiJonction[uiIndice]; //mid value
 
-			//Future Ecriture dans la partie Gauche
+			//Next Writting in the left part
 			if (puivuiComparaison.second[1] + puivuiComparaison.second[2] > uiSommeYZ) {
 				uiBorneSup = uiIndice;
 			}
-			else { //Future Ecriture dans la partie Droite
+			else { //Next Writting in the right part
 				uiBorneInf = uiIndice + 1;
 			}
 		}
 
-		//Ecriture
+		//Writting
 		vpuivuiJonction.insert(vpuivuiJonction.begin() + uiBorneInf, puivuiNewPair);
 	}
 
-	//Pour les faces Behind et Front
-	else { //Regard sur X et Y
+	//Behind / Front Faces
+	else { //Look on sur X / Y
 		while (uiBorneInf != uiBorneSup) {
 
-			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Indice du milieu de la section analysé précédemment
-			puivuiComparaison = vpuivuiJonction[uiIndice]; //Valeur de ce milieu
+			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Mid-section index analyzed
+			puivuiComparaison = vpuivuiJonction[uiIndice]; //mid value
 
-			//Future Ecriture dans la partie Gauche
+			//Next Writting in the left part
 			if (puivuiComparaison.second[0] + puivuiComparaison.second[1] > uiSommeXY) {
 				uiBorneSup = uiIndice;
 			}
-			else { //Future Ecriture dans la partie Droite
+			else { //Next Writting in the right part
 				uiBorneInf = uiIndice + 1;
 			}
 		}
 
-		//Ecriture
+		//Writting
 		vpuivuiJonction.insert(vpuivuiJonction.begin() + uiBorneInf, puivuiNewPair);
 	}
 }
 
-/************************************************************************************************************************************************
-***** GCRVERTICEONBORDER : Méthode déterminant la présence d'un fragment au bord de la matrice												*****
-*************************************************************************************************************************************************
-***** Entrée : vdVertice : BGLGraphe::vertex_descriptor																						*****
-***** Nécessite : Doit exister dans le graphe                                                                                               *****
-***** Sortie : vbDirection : vector <bool>																									*****
-***** Entraine : Détermine la présence d'un fragment au bord de la matrice																	*****
-************************************************************************************************************************************************/
+/********************************************************************************************************************************************************
+***** GCRVerticesOnBorder : Method for detect fragment on borders  																					*****
+*********************************************************************************************************************************************************
+***** Input : vdVertice : BGLGraphe::vertex_descriptor																								*****
+***** Precondition : Need to Exist in the graphe																									*****
+***** Output : vbDirection : vector <bool>																											*****
+***** Effects : Return a vector of boolean for each direction																						*****
+********************************************************************************************************************************************************/
 vector <bool> CGrapheCreator::GCRVerticesOnBorder(BGLGraphe::vertex_descriptor vdVertices) {
 
-	//Récupération du Fragment ainsi que ces coordonnées
+	//Recovery of fragment and it coos
 	CFragment FRGLastVertice = alGPCGraphe[vdVertices];
 	vector <unsigned int> vuiCoosFragment = FRGLastVertice.FRGGetCoos();
 
+	//Initialization of all values => false = not on the border
 	vector <bool> vbDirection = {false, false, false, false, false, false};
 
-	//Détermine à partir des coordonnées et des dimensions du fragment, la proximité ou non d'un bord
+	/* Determines, based on fragment coordinates and dimensions, whether an edge is nearby or not */
 	if (vuiCoosFragment[1] == 0) {
 		vbDirection[0] = true; //North
 	}
@@ -360,257 +294,257 @@ vector <bool> CGrapheCreator::GCRVerticesOnBorder(BGLGraphe::vertex_descriptor v
 		vbDirection[4] = true; //Behind
 	}
 
-	//Retourne le vecteur de booléen
+	//Return boolean vector
 	return vbDirection;
 }
 
-/************************************************************************************************************************************************************************
-***** GCRDETECTIONVOISINVOXEL : Méthode déterminant la liste des voisins à l'aide des voxels																		*****
-*************************************************************************************************************************************************************************
-***** Entrée : vFRGLeafs : vector <CFragment> | uiTailleMin : unsigned int | vpuiLeafs : vector <vector <std::pair<unsigned int, unsigned int>>> &					*****
-***** Nécessite : Ne nécessite rien																																	*****
-***** Sortie : Aucun élément retourné																																*****
-***** Entraine : Détermine les voisins à partir de la liste des feuilles du Split																					*****
-************************************************************************************************************************************************************************/
+/********************************************************************************************************************************************************
+***** GCRDetectionVoisinVoxel : Method for create pairs of neighbor																					*****
+*********************************************************************************************************************************************************
+***** Input : vFRGLeafs : vector <CFragment> | uiTailleMin : unsigned int																			*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Filled the vector vpuiGPCVoisinPrimal (attribut) of pairs of neighbors with voxel													*****
+********************************************************************************************************************************************************/
 void CGrapheCreator::GCRDetectionVoisinVoxel(vector <CFragment> vFRGLeafs, unsigned int uiTailleMin) {
 
-	//Gestion de l'exception : Taille min = 0
+	//Exception management : uiTailleMin = 0
 	if (uiTailleMin == 0) {
 		CException EXCErreur;
 		EXCErreur.EXCModifierValeur(SEUIL_MIN);
 		throw (EXCErreur);
 	}
 
-	std::cout << "DETECTIN VOISIN V3 Voxel" << std::endl << std::endl;
-
-	//Récupération des dimensions de la matrice et de la matrice
+	//Recovery of matrice informations (dimensions and entire matrice)
 	vector <unsigned int> vuiDimensionsMatrice = vFRGLeafs[0].FRGGetDimensionMatrice();
 	boost::multi_array <CGrayScale, 3> * maMatrice = vFRGLeafs[0].FRGGetMatrice();
 
-	//Boucle sur toutes les feuilles 
+	//Loop on all leafs (vFRGLeafs = fragments generate with the Split) 
 	unsigned int uiConnexite = 0;
 	for (vector<CFragment>::iterator itFRGFeuille = vFRGLeafs.begin(); itFRGFeuille != vFRGLeafs.end(); itFRGFeuille++) {
 
-		//Récupération des coordonnées et des dimensions du fragment
+		//Recovery of fragment informations (coos and dimensions)
 		vector <unsigned int> vuiCoosFragment = (*itFRGFeuille).FRGGetCoos();
 		vector <unsigned int> vuiDimensionsFragment = (*itFRGFeuille).FRGGetDimensions();
 
-		/* Pour la suite : Set de la connexité du fragment */
+		/* For the next part : Set Connexity */
 		(*itFRGFeuille).FRGSetConnexite(uiConnexite);
 		vvuiGPCConnexite.push_back({ uiConnexite });
 
-		//Stockage de tous les fragments dans un graphe
+		//storage of fragment on the graphe
 		BGLGraphe::vertex_descriptor vdVertices = boost::add_vertex((*itFRGFeuille), alGPCGraphe);
-		vvdGPCVertex_Desc.push_back(vdVertices); //descriptor dans l'ordre des numéros des Fragments
+		vvdGPCVertex_Desc.push_back(vdVertices); //organisation in list (first connexity = place)
 
-		//Calcul si le fragment est sur l'un des bords (pas de détection des voisins)
+		//Using a method for detect if this fragment is on borders
 		vector <bool> vbDirection = GCRVerticesOnBorder(vdVertices);
 
-		if (!vbDirection[0]) { //North -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[0]) { //North Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Ecriture dans la matrice de la connexité du Voxel (lié à la connexité du fragment)
+					//Wrtting in the matrice, the connexity of the voxel (link with the fragment)
 					maMatrice[0][vuiCoos[0]][vuiCoos[1]][vuiCoos[2]].GSLSetConnexite(uiConnexite);
 
-					//Détermine le fragment au Nord de ce dernier ainsi que sa connexité
+					//Determine the voxel to the north and its connection
 					vector <unsigned int> vuiCoosNorth = { uiBoucleX + vuiCoosFragment[0], vuiCoosFragment[1] - 1, uiBoucleZ + vuiCoosFragment[2] };
 					int iConnexiteNorth = maMatrice[0][vuiCoosNorth[0]][vuiCoosNorth[1]][vuiCoosNorth[2]].GSLGetConnexite();
 
-					//Si la connexité n'est pas égale à -1 (valeur d'initialisation) => alors déjà explorer et possède la connexité de son fragment
+					//If the connexity isn't equal to -1 (initialization value) => then already explore and know the connexity of it fragment
 					if (iConnexiteNorth != -1) {
 						
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(static_cast <int> (uiConnexite), iConnexiteNorth), uiMax = max(static_cast <int> (uiConnexite), iConnexiteNorth);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 					}
 				}
 			}
 		}
 
-		if (!vbDirection[1]) { //South -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[1]) { //South Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 					// Y + Dimension 2
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], vuiCoosFragment[1] + vuiDimensionsFragment[1] - 1, uiBoucleZ + vuiCoosFragment[2] };
 
-					//Ecriture dans la matrice de la connexité du Voxel (lié à la connexité du fragment)
+					//Wrtting in the matrice, the connexity of the voxel (link with the fragment)
 					maMatrice[0][vuiCoos[0]][vuiCoos[1]][vuiCoos[2]].GSLSetConnexite(uiConnexite);
 
-					//Détermine le fragment au Sud de ce dernier ainsi que sa connexité
-					vector <unsigned int> vuiCoosSouth = { uiBoucleX + vuiCoosFragment[0], vuiCoosFragment[1] + vuiDimensionsFragment[1], uiBoucleZ + vuiCoosFragment[2] }; //Voxel au Sud
+					//Determine the voxel to the north and its connection
+					vector <unsigned int> vuiCoosSouth = { uiBoucleX + vuiCoosFragment[0], vuiCoosFragment[1] + vuiDimensionsFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 					int iConnexiteSouth = maMatrice[0][vuiCoosSouth[0]][vuiCoosSouth[1]][vuiCoosSouth[2]].GSLGetConnexite();
 
-					//Si la connexité n'est pas égale à -1 (valeur d'initialisation) => alors déjà explorer et possède la connexité de son fragment
+					//If the connexity isn't equal to -1 (initialization value) => then already explore and know the connexity of it fragment
 					if (iConnexiteSouth != -1) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(static_cast <int> (uiConnexite), iConnexiteSouth), uiMax = max(static_cast <int> (uiConnexite), iConnexiteSouth);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 					}
 				}
 			}
 		}
 
-		if (!vbDirection[2]) { //West -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[2]) { //West Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Ecriture dans la matrice de la connexité du Voxel (lié à la connexité du fragment)
+					//Wrtting in the matrice, the connexity of the voxel (link with the fragment)
 					maMatrice[0][vuiCoos[0]][vuiCoos[1]][vuiCoos[2]].GSLSetConnexite(uiConnexite);
 
-					//Détermine le fragment à l'West de ce dernier ainsi que sa connexité
-					vector <unsigned int> vuiCoosWest = { vuiCoosFragment[0] - 1, uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] }; //Voxel à l'Ouest
+					//Determine the voxel to the north and its connection
+					vector <unsigned int> vuiCoosWest = { vuiCoosFragment[0] - 1, uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 					int iConnexiteWest = maMatrice[0][vuiCoosWest[0]][vuiCoosWest[1]][vuiCoosWest[2]].GSLGetConnexite();
 
-					//Si la connexité n'est pas égale à -1 (valeur d'initialisation) => alors déjà explorer et possède la connexité de son fragment
+					//If the connexity isn't equal to -1 (initialization value) => then already explore and know the connexity of it fragment
 					if (iConnexiteWest != -1) { 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+
+						//Pair creation with min first and max second
 						int uiMin = min(static_cast <int> (uiConnexite), iConnexiteWest), uiMax = max(static_cast <int> (uiConnexite), iConnexiteWest);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 					}
 				}
 			}
 		}
 
-		if (!vbDirection[3]) { //East -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[3]) { //East Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 					//X + Dimension 1
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { vuiCoosFragment[0] + vuiDimensionsFragment[0] - 1, uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Ecriture dans la matrice de la connexité du Voxel (lié à la connexité du fragment)
+					//Wrtting in the matrice, the connexity of the voxel (link with the fragment)
 					maMatrice[0][vuiCoos[0]][vuiCoos[1]][vuiCoos[2]].GSLSetConnexite(uiConnexite);
 
-					//Détermine le fragment à l'East de ce dernier ainsi que sa connexité
-					vector <unsigned int> vuiCoosEast = { vuiCoosFragment[0] + vuiDimensionsFragment[0], uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] }; //Voxel à L'est
+					//Determine the voxel to the north and its connection
+					vector <unsigned int> vuiCoosEast = { vuiCoosFragment[0] + vuiDimensionsFragment[0], uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 					int iConnexiteEast = maMatrice[0][vuiCoosEast[0]][vuiCoosEast[1]][vuiCoosEast[2]].GSLGetConnexite();
 
-					//Si la connexité n'est pas égale à -1 (valeur d'initialisation) => alors déjà explorer et possède la connexité de son fragment
+					//If the connexity isn't equal to -1 (initialization value) => then already explore and know the connexity of it fragment
 					if (iConnexiteEast != -1) {
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(static_cast <int> (uiConnexite), iConnexiteEast), uiMax = max(static_cast <int> (uiConnexite), iConnexiteEast);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 					}
 				}
 			}
 		}
 
-		if (!vbDirection[4]) { //Behind -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[4]) { //Behind Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 					//Z + dimension 3
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] + vuiDimensionsFragment[2] - 1};
 
-					//Ecriture dans la matrice de la connexité du Voxel (lié à la connexité du fragment)
+					//Wrtting in the matrice, the connexity of the voxel (link with the fragment)
 					maMatrice[0][vuiCoos[0]][vuiCoos[1]][vuiCoos[2]].GSLSetConnexite(uiConnexite);
 
-					//Détermine le fragment au Behind de ce dernier ainsi que sa connexité
-					vector <unsigned int> vuiCoosBehind = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] + vuiDimensionsFragment[2] }; //Voxel Devant
+					//Determine the voxel to the north and its connection
+					vector <unsigned int> vuiCoosBehind = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] + vuiDimensionsFragment[2] };
 					int iConnexiteBehind = maMatrice[0][vuiCoosBehind[0]][vuiCoosBehind[1]][vuiCoosBehind[2]].GSLGetConnexite();
 
-					//Si la connexité n'est pas égale à -1 (valeur d'initialisation) => alors déjà explorer et possède la connexité de son fragment
+					//If the connexity isn't equal to -1 (initialization value) => then already explore and know the connexity of it fragment
 					if (iConnexiteBehind != -1) {
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(static_cast <int> (uiConnexite), iConnexiteBehind), uiMax = max(static_cast <int> (uiConnexite), iConnexiteBehind);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 					}
 				}
 			}
 		}
 
-		if (!vbDirection[5]) { //Front -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[5]) { //Front Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] };
 
-					//Ecriture dans la matrice de la connexité du Voxel (lié à la connexité du fragment)
+					//Wrtting in the matrice, the connexity of the voxel (link with the fragment)
 					maMatrice[0][vuiCoos[0]][vuiCoos[1]][vuiCoos[2]].GSLSetConnexite(uiConnexite);
 
-					//Détermine le fragment au Front de ce dernier ainsi que sa connexité
-					vector <unsigned int> vuiCoosFront = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] - 1 }; //Voxel Devant
+					//Determine the voxel to the north and its connection
+					vector <unsigned int> vuiCoosFront = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] - 1 };
 					int iConnexiteFront = maMatrice[0][vuiCoosFront[0]][vuiCoosFront[1]][vuiCoosFront[2]].GSLGetConnexite();
 
-					//Si la connexité n'est pas égale à -1 (valeur d'initialisation) => alors déjà explorer et possède la connexité de son fragment
+					//If the connexity isn't equal to -1 (initialization value) => then already explore and know the connexity of it fragment
 					if (iConnexiteFront != -1) {
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(static_cast <int> (uiConnexite), iConnexiteFront), uiMax = max(static_cast <int> (uiConnexite), iConnexiteFront);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 					}
 				}
 			}
 		}
 
-		//Incrémentation de la connexité
+		//Connexity incrementation 
 		uiConnexite++;
 	}
 
-	//Suppression de tous les doublons
+	//Delete all duplicates
 	std::sort(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end());
 	vpuiGPCVoisinPrimal.erase(std::unique(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end()), vpuiGPCVoisinPrimal.end());
 }
 
-/************************************************************************************************************************************************************************
-***** GCRDETECTIONVOISINV2DICHO : Méthode déterminant la liste des voisins en utilisant des vecteurs de vecteur et une dichotomie									*****
-*************************************************************************************************************************************************************************
-***** Entrée : vFRGLeafs : vector <CFragment> | uiTailleMin : unsigned int | vpuiLeafs : vector <vector <std::pair<unsigned int, unsigned int>>> &					*****
-***** Nécessite : Ne nécessite rien																																	*****
-***** Sortie : Aucun élément retourné																																*****
-***** Entraine : Détermine les voisins à partir de la liste des feuilles du Split																					*****
-************************************************************************************************************************************************************************/
+/********************************************************************************************************************************************************
+***** GCRDetectionVoisinV2Dicho : Method for create pairs of neighbor																				*****
+*********************************************************************************************************************************************************
+***** Input : vFRGLeafs : vector <CFragment> | uiTailleMin : unsigned int																			*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Filled the vector vpuiGPCVoisinPrimal (attribut) of pairs of neighbors with vectors of vectors and dichotomous						*****
+********************************************************************************************************************************************************/
 void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, unsigned int uiTailleMin) {
 
-	//Gestion de l'exception : Taille min = 0
+	//Exception management : uiTailleMin = 0
 	if (uiTailleMin == 0) {
 		CException EXCErreur;
 		EXCErreur.EXCModifierValeur(SEUIL_MIN);
 		throw (EXCErreur);
 	}
 
-	cout << "DETECTION VOISIN V2 DICHOTOMIQUE (VECTEUR DE VECTEUR)" << endl << endl;
-
-	//Récupération des dimensions de la matrice
+	//Recovery of matrice informations (dimensions)
 	vector <unsigned int> vuiDimensionsMatrice = vFRGLeafs[0].FRGGetDimensionMatrice();
 
-	//Initialisation des vecteurs de vecteurs pour stocker les futurs voisins en fonction d'un axe
+	//Initialize vectors of vectors to store future neighbors based on an axis
 	vector <vector <std::pair<unsigned int, vector<unsigned int>>>> JonctionNorth;
 	vector <vector <std::pair<unsigned int, vector<unsigned int>>>> JonctionSouth;
 
@@ -619,7 +553,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 		JonctionSouth.push_back({});
 	}
 
-	//Initialisation des vecteurs de vecteurs pour stocker les futurs voisins en fonction d'un axe
+	//Initialize vectors of vectors to store future neighbors based on an axis
 	vector <vector <std::pair<unsigned int, vector<unsigned int>>>> JonctionWest;
 	vector <vector <std::pair<unsigned int, vector<unsigned int>>>> JonctionEast;
 
@@ -628,7 +562,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 		JonctionEast.push_back({});
 	}
 
-	//Initialisation des vecteurs de vecteurs pour stocker les futurs voisins en fonction d'un axe
+	//Initialize vectors of vectors to store future neighbors based on an axis
 	vector <vector <std::pair<unsigned int, vector<unsigned int>>>> JonctionBehind;
 	vector <vector <std::pair<unsigned int, vector<unsigned int>>>> JonctionFront;
 
@@ -637,50 +571,50 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 		JonctionFront.push_back({});
 	}
 
-	//Boucle sur toutes les feuilles 
+	//Loop on all leafs (vFRGLeafs = fragments generate with the Split) 
 	for (vector<CFragment>::iterator itFRGFeuille = vFRGLeafs.begin(); itFRGFeuille != vFRGLeafs.end(); itFRGFeuille++) {
 
-		//Récupération des coordonnées et des dimensions du fragment
+		//Recovery of fragment informations (coos and dimensions)
 		vector <unsigned int> vuiCoosFragment = (*itFRGFeuille).FRGGetCoos();
 		vector <unsigned int> vuiDimensionsFragment = (*itFRGFeuille).FRGGetDimensions();
 		
-		/* Pour la suite : Set de la connexité du fragment */
+		/* For the next part : Set Connexity */
 		unsigned int uiConnexite = (*itFRGFeuille).FRGGetConnexite();
 		vvuiGPCConnexite.push_back({ uiConnexite });
 
-		//Stockage de tous les fragments dans un graphe
+		//storage of fragment on the graphe
 		BGLGraphe::vertex_descriptor vdVertices = boost::add_vertex((*itFRGFeuille), alGPCGraphe);
-		vvdGPCVertex_Desc.push_back(vdVertices); //descriptor dans l'ordre des numéros des Fragments
+		vvdGPCVertex_Desc.push_back(vdVertices); //organisation in list (first connexity = place)
 
-		//Calcul si le fragment est sur l'un des bords (pas de détection des voisins)
+		//Using a method for detect if this fragment is on borders
 		vector <bool> vbDirection = GCRVerticesOnBorder(vdVertices);
 
-		if (!vbDirection[0]) { //North -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[0]) { //North Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
+					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionSouth[vuiCoosFragment[1]], vuiCoos, "North_South");
 
-					//Si une cohérence est trouvée
+					//If coherence is Found
 					if (itFind != JonctionSouth[vuiCoosFragment[1]].end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//delete of the coherence (limit next research)
 						JonctionSouth[vuiCoosFragment[1]].erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence found, store voxel in vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionNorth((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionNorth[vuiCoosFragment[1]], puivuiCoosJonctionNorth, "North_South");
 					}
@@ -688,33 +622,33 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 			}
 		}
 
-		if (!vbDirection[1]) { //South -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[1]) { //South Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 					// Y + Dimension 2
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], vuiCoosFragment[1] + vuiDimensionsFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
+					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionNorth[vuiCoosFragment[1] + vuiDimensionsFragment[1]], vuiCoos, "North_South");
 
-					//Si une cohérence est trouvée
+					//If coherence is Found
 					if (itFind != JonctionNorth[vuiCoosFragment[1] + vuiDimensionsFragment[1]].end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//delete of the coherence (limit next research)
 						JonctionNorth[vuiCoosFragment[1] + vuiDimensionsFragment[1]].erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence found, store voxel in vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionSouth((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionSouth[vuiCoosFragment[1] + vuiDimensionsFragment[1]], puivuiCoosJonctionSouth, "North_South");
 					}
@@ -722,32 +656,32 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 			}
 		}
 
-		if (!vbDirection[2]) { //West -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[2]) { //West Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
+					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionEast[vuiCoosFragment[0]], vuiCoos, "East_West");
 
-					//Si une cohérence est trouvée
+					//If coherence is Found
 					if (itFind != JonctionEast[vuiCoosFragment[0]].end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//delete of the coherence (limit next research)
 						JonctionEast[vuiCoosFragment[0]].erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence found, store voxel in vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionWest((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionWest[vuiCoosFragment[0]], puivuiCoosJonctionWest, "East_West");
 					}
@@ -755,33 +689,33 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 			}
 		}
 
-		if (!vbDirection[3]) { //East -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[3]) { //East Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 					//X + Dimension 1
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { vuiCoosFragment[0] + vuiDimensionsFragment[0], uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
+					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionWest[vuiCoosFragment[0] + vuiDimensionsFragment[0]], vuiCoos, "East_West");
 
-					//Si une cohérence est trouvée
+					//If coherence is Found
 					if (itFind != JonctionWest[vuiCoosFragment[0] + vuiDimensionsFragment[0]].end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//delete of the coherence (limit next research)
 						JonctionWest[vuiCoosFragment[0] + vuiDimensionsFragment[0]].erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence found, store voxel in vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionEast((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionEast[vuiCoosFragment[0] + vuiDimensionsFragment[0]], puivuiCoosJonctionEast, "East_West");
 					}
@@ -789,33 +723,33 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 			}
 		}
 
-		if (!vbDirection[4]) { //Behind -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[4]) { //Behind Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 					//Z + dimension 3
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] + vuiDimensionsFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
+					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionFront[vuiCoosFragment[2] + vuiDimensionsFragment[2]], vuiCoos, "Front_Behind");
 
-					//Si une cohérence est trouvée
+					//If coherence is Found
 					if (itFind != JonctionFront[vuiCoosFragment[2] + vuiDimensionsFragment[2]].end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//delete of the coherence (limit next research)
 						JonctionFront[vuiCoosFragment[2] + vuiDimensionsFragment[2]].erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence found, store voxel in vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionBehind((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionBehind[vuiCoosFragment[2] + vuiDimensionsFragment[2]], puivuiCoosJonctionBehind, "Front_Behind");
 					}
@@ -823,32 +757,32 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 			}
 		}
 
-		if (!vbDirection[5]) { //Front -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[5]) { //Front Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
+					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionBehind[vuiCoosFragment[2]], vuiCoos, "Front_Behind");
 
-					//Si une cohérence est trouvée
+					//If coherence is Found
 					if (itFind != JonctionBehind[vuiCoosFragment[2]].end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Ajout dans le vecteur de storage des pairs (de voisins)
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//Add in the storage vector
 						JonctionBehind[vuiCoosFragment[2]].erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence found, store voxel in vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionFront((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionFront[vuiCoosFragment[2]], puivuiCoosJonctionFront, "Front_Behind");
 					}
@@ -857,31 +791,29 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 		}
 	}
 
-	//Suppression de tous les doublons
+	//Delete all duplicates
 	std::sort(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end());
 	vpuiGPCVoisinPrimal.erase(std::unique(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end()), vpuiGPCVoisinPrimal.end());
 }
 
-/************************************************************************************************************************************************************************
-***** GCRDETECTIONVOISINDICHO : Méthode déterminant la liste des voisins en utilisant des vecteurs et une dichotomie												*****
-*************************************************************************************************************************************************************************
-***** Entrée : vFRGLeafs : vector <CFragment> | uiTailleMin : unsigned int | vpuiLeafs : vector <vector <std::pair<unsigned int, unsigned int>>> &					*****
-***** Nécessite : Ne nécessite rien																																	*****
-***** Sortie : Aucun élément retourné																																*****
-***** Entraine : Détermine les voisins à partir de la liste des feuilles du Split																					*****
-************************************************************************************************************************************************************************/
+/********************************************************************************************************************************************************
+***** GCRDetectionVoisinDicho : Method for create pairs of neighbor																					*****
+*********************************************************************************************************************************************************
+***** Input : vFRGLeafs : vector <CFragment> | uiTailleMin : unsigned int																			*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Filled the vector vpuiGPCVoisinPrimal (attribut) of pairs of neighbors with vectors and dichotomous									*****
+********************************************************************************************************************************************************/
 void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsigned int uiTailleMin) {
 
-	//Gestion de l'exception : Taille min = 0
+	//Exception management : uiTailleMin = 0
 	if (uiTailleMin == 0) {
 		CException EXCErreur;
 		EXCErreur.EXCModifierValeur(SEUIL_MIN);
 		throw (EXCErreur);
 	}
 
-	cout << "DETECTION VOISIN V1 DICHOTOMIQUE" << endl << endl;
-
-	//Préparation des vectors nécessaires aux calculs des voisins
+	//Initialize vectors of vectors to store future neighbors based on an axis
 	vector <std::pair<unsigned int, vector<unsigned int>>> JonctionNorth;
 	vector <std::pair<unsigned int, vector<unsigned int>>> JonctionSouth;
 	vector <std::pair<unsigned int, vector<unsigned int>>> JonctionWest;
@@ -889,50 +821,50 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 	vector <std::pair<unsigned int, vector<unsigned int>>> JonctionBehind;
 	vector <std::pair<unsigned int, vector<unsigned int>>> JonctionFront;
 
-	//Boucle parcourant toutes les feuiles
+	//Loop on all leafs (vFRGLeafs = fragments generate with the Split)
 	for (vector<CFragment>::iterator itFRGFeuille = vFRGLeafs.begin(); itFRGFeuille != vFRGLeafs.end(); itFRGFeuille++) {
 
-		//Récupération des coordonnées et des dimensions du fragment
+		//Recovery of fragment informations (coos and dimensions)
 		vector <unsigned int> vuiCoosFragment = (*itFRGFeuille).FRGGetCoos();
 		vector <unsigned int> vuiDimensionsFragment = (*itFRGFeuille).FRGGetDimensions();
 
-		/* Pour la suite : Set de la connexité du fragment */
+		/* For the next part : Set Connexity */
 		unsigned int uiConnexite = (*itFRGFeuille).FRGGetConnexite();
 		vvuiGPCConnexite.push_back({ uiConnexite });
 
-		//Stockage de tous les fragments dans un graphe
+		//storage of fragment on the graphe
 		BGLGraphe::vertex_descriptor vdVertices = boost::add_vertex((*itFRGFeuille), alGPCGraphe);
-		vvdGPCVertex_Desc.push_back(vdVertices); //descriptor dans l'ordre des numéros des Fragments
+		vvdGPCVertex_Desc.push_back(vdVertices); //organisation in list (first connexity = place)
 
-		//Calcul si le fragment est sur l'un des bords (pas de détection des voisins)
+		//Using a method for detect if this fragment is on borders
 		vector <bool> vbDirection = GCRVerticesOnBorder(vdVertices);
 
-		if (!vbDirection[0]) { //North -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[0]) { //North Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
+					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionSouth, vuiCoos, "North_South");
 
-					//Si une cohérence est trouvée
+					//If coherence is Found
 					if (itFind != JonctionSouth.end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//delete of the coherence (limit next research)
 						JonctionSouth.erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence found, store voxel in vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionNorth((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionNorth, puivuiCoosJonctionNorth, "North_South");
 					}
@@ -940,34 +872,33 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 			}
 		}
 
-		if (!vbDirection[1]) { //South -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[1]) { //South Face
+			//For each voxel on the face (limited to proven points of intersection)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 					// Y + Dimension 2
 
-					//Coordonnées du Voxel
+					//Voxel coos
 					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], vuiCoosFragment[1] + vuiDimensionsFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
+					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionNorth, vuiCoos, "North_South");
 
-					//Si une cohérence est trouvée
+					//If coherence is Found
 					if (itFind != JonctionNorth.end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Pair creation with min first and max second
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add in the storage vector
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//delete of the coherence (limit next research)
 						JonctionNorth.erase(itFind);
 					}
 					else {
-
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence found, store voxel in vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionSouth((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionSouth, puivuiCoosJonctionSouth, "North_South");
 					}
@@ -975,33 +906,33 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 			}
 		}
 
-		if (!vbDirection[2]) { //West -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[2]) { //West Face
+			//For each voxel of the face (limited to confirmed intersection points)
 			for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 
-					//Coordonnées du Voxel
-					vector <unsigned int> vuiCoos = { vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
+					//Voxel coos
+					vector<unsigned int> vuiCoos = { vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
-					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionEast, vuiCoos, "East_West");
+					//Search in the opposite vector for coherence (each voxel without coherence is stored for future coherence with another voxel)
+					vector<std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionEast, vuiCoos, "East_West");
 
-					//Si une cohérence est trouvée
+					//If coherence is found
 					if (itFind != JonctionEast.end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Create a pair with the minimum as the first element (and maximum as the second element)
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add to the vector storing pairs (neighbors)
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//Remove coherence (reduce subsequent searches)
 						JonctionEast.erase(itFind);
 					}
 					else {
 
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence is found, store the voxel in a vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionWest((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionWest, puivuiCoosJonctionWest, "East_West");
 					}
@@ -1009,33 +940,33 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 			}
 		}
 
-		if (!vbDirection[3]) { //East -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[3]) { //East Face
+			//For each voxel of the face (limited to confirmed intersection points)
 			for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 				for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDimensionsFragment[2]; uiBoucleZ += uiTailleMin) {
 					//X + Dimension 1
 
-					//Coordonnées du Voxel
-					vector <unsigned int> vuiCoos = { vuiCoosFragment[0] + vuiDimensionsFragment[0], uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
+					//Voxel coos
+					vector<unsigned int> vuiCoos = { vuiCoosFragment[0] + vuiDimensionsFragment[0], uiBoucleY + vuiCoosFragment[1], uiBoucleZ + vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
-					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionWest, vuiCoos, "East_West");
+					//Search in the opposite vector for coherence (each voxel without coherence is stored for future coherence with another voxel)
+					vector<std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionWest, vuiCoos, "East_West");
 
-					//Si une cohérence est trouvée
+					//If coherence is found
 					if (itFind != JonctionWest.end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Create a pair with the minimum as the first element (and maximum as the second element)
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add to the vector storing pairs (neighbors)
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//Remove coherence (reduce subsequent searches)
 						JonctionWest.erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence is found, store the voxel in a vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionEast((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionEast, puivuiCoosJonctionEast, "East_West");
 					}
@@ -1043,33 +974,33 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 			}
 		}
 
-		if (!vbDirection[4]) { //Behind -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[4]) { //Behind Face
+			// For each voxel of the face (limited to confirmed intersection points)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
-					//Z + dimension 3
+					// Z + dimension 3
 
-					//Coordonnées du Voxel
-					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] + vuiDimensionsFragment[2] };
+					//Voxel coos
+					vector<unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] + vuiDimensionsFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
-					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionFront, vuiCoos, "Front_Behind");
+					//Search in the opposite vector for coherence (each voxel without coherence is stored for future coherence with another voxel)
+					vector<std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionFront, vuiCoos, "Front_Behind");
 
-					//Si une cohérence est trouvée
+					//If coherence is found
 					if (itFind != JonctionFront.end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Create a pair with the minimum as the first element (and maximum as the second element)
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add to the vector storing pairs (neighbors)
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//Remove coherence (reduce subsequent searches)
 						JonctionFront.erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence is found, store the voxel in a vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionBehind((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionBehind, puivuiCoosJonctionBehind, "Front_Behind");
 					}
@@ -1077,32 +1008,32 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 			}
 		}
 
-		if (!vbDirection[5]) { //Front -> pas au bord
-			//Pour chaque voxels de la face (limité aux points d'intersection avérés)
+		if (!vbDirection[5]) { //Front Face
+			// For each voxel of the face (limited to confirmed intersection points)
 			for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDimensionsFragment[0]; uiBoucleX += uiTailleMin) {
 				for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDimensionsFragment[1]; uiBoucleY += uiTailleMin) {
 
-					//Coordonnées du Voxel
-					vector <unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] };
+					//Voxel coos
+					vector<unsigned int> vuiCoos = { uiBoucleX + vuiCoosFragment[0], uiBoucleY + vuiCoosFragment[1], vuiCoosFragment[2] };
 
-					//Recherche dans le vecteur opposé une cohérence (chaque voxel sans cohérence est stocké pour une futur cohérence avec un autre voxel)
-					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionBehind, vuiCoos, "Front_Behind");
+					// Search in the opposite vector for coherence (each voxel without coherence is stored for future coherence with another voxel)
+					vector<std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionBehind, vuiCoos, "Front_Behind");
 
-					//Si une cohérence est trouvée
+					//If coherence is found
 					if (itFind != JonctionBehind.end()) {
 
-						//Création d'une pair avec le min en 1er élément (et max en 2nd élément)
+						//Create a pair with the minimum as the first element (and maximum as the second element)
 						unsigned int uiMin = min(uiConnexite, (*itFind).first), uiMax = max(uiConnexite, (*itFind).first);
 						std::pair<unsigned int, unsigned int> puiPair(uiMin, uiMax);
 
-						//Ajout dans le vecteur de stockage des pairs (de voisins)
+						//Add to the vector storing pairs (neighbors)
 						vpuiGPCVoisinPrimal.push_back(puiPair);
 
-						//Suppression de la cohérence (diminuer les recherches suivantes)
+						//Remove coherence (reduce subsequent searches)
 						JonctionBehind.erase(itFind);
 					}
 					else {
-						//Si aucune cohérence trouvée, stock le voxel dans un vecteur
+						//If no coherence is found, store the voxel in a vector
 						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionFront((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
 						EcritureDichotomie(JonctionFront, puivuiCoosJonctionFront, "Front_Behind");
 					}
@@ -1111,155 +1042,193 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 		}
 	}
 
-
-	//Suppression de tous les doublons
+	//Delete all duplicates
 	std::sort(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end());
 	vpuiGPCVoisinPrimal.erase(std::unique(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end()), vpuiGPCVoisinPrimal.end());
 }
 
-/********************************************************************************************************************************************************************************************
-***** GCRBESTCOMPATIBILITY : Méthode déterminant les 2 meilleurs compatibilité entre 2 fragments voisins																				*****
-*********************************************************************************************************************************************************************************************
-***** Entrée : ppuipuiFacteurFusionnable : std::pair<std::pair<unsigned int, std::pair<unsigned int, unsigned int>>, std::pair<unsigned int, std::pair<unsigned int, unsigned int>>> &  *****
-*****		   puiPair : std::pair<unsigned int, unsigned int> & | uiHomogeneite : unsigned int																							*****
-***** Nécessite : Ne nécessite rien																																						*****
-***** Sortie : Aucun élément retourné																																					*****
-***** Entraine : Déterminant les 2 meilleurs compatibilité entre 2 fragments voisins																									*****
-********************************************************************************************************************************************************************************************/
-void CGrapheCreator::GCRBestCompatibility(std::pair<std::pair<unsigned int, std::pair<unsigned int, unsigned int>>, std::pair<unsigned int, std::pair<unsigned int, unsigned int>>> & ppuipuiFacteurFusionnable, std::pair<unsigned int, unsigned int> & puiPair, unsigned int uiHomogeneite) {
+/********************************************************************************************************************************************************
+***** GCRThreadRedef : Method calling by a thread																									*****
+*********************************************************************************************************************************************************
+***** Input : uiConnexite1, uiConnexite2 : unsigned int | puiMinMax : std::pair <unsigned int, unsigned int> 										*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Modifing Min/Max of vertices in the second connexity																				*****
+********************************************************************************************************************************************************/
+void CGrapheCreator::GCRThreadRedef(unsigned int uiConnexite1, unsigned int uiConnexite2, std::pair <unsigned int, unsigned int> puiMinMax) {
 
-	//Récupération des fragments
+	//For all vertices of the other connexity, change their connectivity and Min/Max values
+	for (unsigned int uiConnexe : vvuiGPCConnexite[uiConnexite2]) {
+
+		vvuiGPCConnexite[uiConnexite1].push_back(alGPCGraphe[vvdGPCVertex_Desc[uiConnexe]].FRGGetConnexite());
+
+		//Modifing Min/Max and connexity of fragments
+		alGPCGraphe[vvdGPCVertex_Desc[uiConnexe]].FRGSetMinMax(puiMinMax);
+		alGPCGraphe[vvdGPCVertex_Desc[uiConnexe]].FRGSetConnexite(uiConnexite1);
+
+	}
+}
+
+/********************************************************************************************************************************************************
+***** GCRLinkVertices : Method for link vertices in the graphe																						*****
+*********************************************************************************************************************************************************
+***** Input : puiPair : std::pair<unsigned int, unsigned int>												 										*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Link vertices of graphe	with modification of Min/Max of each vertices required														*****
+********************************************************************************************************************************************************/
+void CGrapheCreator::GCRLinkVertices(std::pair<unsigned int, unsigned int> puiPair) {
+
+	//Initialization of fragments (vertices) with storage previoulsy realized
 	BGLGraphe::vertex_descriptor vdFragment1 = vvdGPCVertex_Desc[puiPair.first], vdFragment2 = vvdGPCVertex_Desc[puiPair.second];
 
-	//Calcul de la différence des Mins et Maxs
+	//Identifies min of Mins and max of Maxs
+	std::pair <unsigned int, unsigned int> puiMinMax(min(alGPCGraphe[vdFragment1].FRGGetMin(), alGPCGraphe[vdFragment2].FRGGetMin()), max(alGPCGraphe[vdFragment1].FRGGetMax(), alGPCGraphe[vdFragment2].FRGGetMax()));
+
+	/* Update ofvertices in the same part */
+
+	unsigned int uiConnexite1 = min(alGPCGraphe[vdFragment1].FRGGetConnexite(), alGPCGraphe[vdFragment2].FRGGetConnexite());
+	unsigned int uiConnexite2 = max(alGPCGraphe[vdFragment1].FRGGetConnexite(), alGPCGraphe[vdFragment2].FRGGetConnexite());
+
+	//if vertices isn't in the same part
+	if (uiConnexite1 != uiConnexite2) {
+
+		//Determines connexity with most and least vertices => change connexity for least vertices
+		if (vvuiGPCConnexite[uiConnexite1].size() < vvuiGPCConnexite[uiConnexite2].size()) {
+			unsigned int uiConnexiteTMP = uiConnexite1;
+			uiConnexite1 = uiConnexite2;
+			uiConnexite2 = uiConnexiteTMP;
+		}
+
+		//Create a copy of the vector to avoid thread interference
+		vector <unsigned int> vuiGPCConnexiteSave = vvuiGPCConnexite[uiConnexite1];
+
+		//Calling of the thread method
+		std::thread ThreadConnexite = thread(&CGrapheCreator::GCRThreadRedef, this, uiConnexite1, uiConnexite2, puiMinMax);
+
+		//Modifing Min/Max of fragments
+		for (unsigned int uiConnexe : vuiGPCConnexiteSave) {
+			alGPCGraphe[vvdGPCVertex_Desc[uiConnexe]].FRGSetMinMax(puiMinMax);
+		}
+
+		//Waitting thread
+		ThreadConnexite.join();
+	}
+
+	//Add edges between this to vertices
+	boost::add_edge(vdFragment1, vdFragment2, alGPCGraphe);
+}
+
+/********************************************************************************************************************************************************
+***** GCRBestCompatibility : Method for find the best neighbor pair																					*****
+*********************************************************************************************************************************************************
+***** Entrée : puipuiFacteurFusionnable : std::pair<unsigned int, std::pair<unsigned int, unsigned int>> &											*****
+*****		   puiPair : std::pair<unsigned int, unsigned int> & | uiHomogeneite : unsigned int														*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Find the best compatibility of a neighbor pair																						*****
+********************************************************************************************************************************************************/
+void CGrapheCreator::GCRBestCompatibility(std::pair<unsigned int, std::pair<unsigned int, unsigned int>> & puipuiFacteurFusionnable, std::pair<unsigned int, unsigned int> & puiPair, unsigned int uiHomogeneite) {
+
+	//Recovering fragments
+	BGLGraphe::vertex_descriptor vdFragment1 = vvdGPCVertex_Desc[puiPair.first], vdFragment2 = vvdGPCVertex_Desc[puiPair.second];
+
+	//Calculation of Min/Max difference
 	unsigned int uiDiffMax = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMax() - alGPCGraphe[vdFragment2].FRGGetMax()));
 	unsigned int uiDiffMin = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMin() - alGPCGraphe[vdFragment2].FRGGetMin()));
 
-	//Si ces différences respectent l'homogénéité
+	//If these differences respect homogeneity
 	if (uiDiffMax <= uiHomogeneite && uiDiffMin <= uiHomogeneite) {
 
-		/* Détermine le meilleur facteur de compatibilité => plus uiCompatibilite est faible plus facteur de fusionnabilité est grand */
+		/* Determines the best compatibility factor => the lower the uiCompatibilite, the higher the mergeability factor */
 		unsigned int uiCompatibilite = uiDiffMax + uiDiffMin;
 
-		//En cas d'égalité, choix définie arbitrairement et non aléatoirement
-		unsigned int uiSommeBestBest = ppuipuiFacteurFusionnable.first.second.first + ppuipuiFacteurFusionnable.first.second.second;
-		unsigned int uiSommeBestSecond = ppuipuiFacteurFusionnable.second.second.first + ppuipuiFacteurFusionnable.second.second.second;
+		//Compare with the best or Check in the case of a tie to make a choice
+		unsigned int uiSommeBestBest = puipuiFacteurFusionnable.second.first + puipuiFacteurFusionnable.second.second;
 		unsigned int uiSommePaire = puiPair.first + puiPair.second;
 
-		//Compare avec le meilleur ou Vérifie dans le cas d'une égalité pour faire un choix
-		if ((ppuipuiFacteurFusionnable.first.first > uiCompatibilite) || (ppuipuiFacteurFusionnable.first.first == uiCompatibilite && uiSommeBestBest > uiSommePaire)) {
+			
+		if ((puipuiFacteurFusionnable.first > uiCompatibilite) || (puipuiFacteurFusionnable.first == uiCompatibilite && uiSommeBestBest > uiSommePaire)) {
 
-			//Le meilleur devient le second meilleur et remplace le meilleur
-			ppuipuiFacteurFusionnable.second = ppuipuiFacteurFusionnable.first;
-			ppuipuiFacteurFusionnable.first = std::pair<unsigned int, std::pair<unsigned int, unsigned int>>(uiCompatibilite, puiPair);
+			//Remplace the best
+			puipuiFacteurFusionnable = std::pair<unsigned int, std::pair<unsigned int, unsigned int>>(uiCompatibilite, puiPair);
 
-		}
-		//Sinon compare le second meilleur
-		else if (puiPair != ppuipuiFacteurFusionnable.first.second) {
-			if ((ppuipuiFacteurFusionnable.second.first > uiCompatibilite) || (ppuipuiFacteurFusionnable.second.first == uiCompatibilite && uiSommeBestSecond > uiSommePaire)) {
-
-				//Remplace le second meilleur
-				ppuipuiFacteurFusionnable.second = std::pair<unsigned int, std::pair<unsigned int, unsigned int>>(uiCompatibilite, puiPair);
-			}
 		}
 	}
 }
 
-/********************************************************************************************************************************************************************************************
-***** GCRTHREADFORMERGE : Méthode lançant tous les threads afin de les comparer																											*****
-*********************************************************************************************************************************************************************************************
-***** Entrée : ppuipuiFacteurFusionnable : std::pair<std::pair<unsigned int, std::pair<unsigned int, unsigned int>>, std::pair<unsigned int, std::pair<unsigned int, unsigned int>>> &  *****
-*****		   puiPair : std::pair<unsigned int, unsigned int> & | uiHomogeneite : unsigned int																							*****
-***** Nécessite : Ne nécessite rien																																						*****
-***** Sortie : Aucun élément retourné																																					*****
-***** Entraine : Lance tous les threads afin de les comparer																															*****
-********************************************************************************************************************************************************************************************/
-void CGrapheCreator::GCRThreadForMerge(std::pair<std::pair<unsigned int, std::pair<unsigned int, unsigned int>>, std::pair<unsigned int, std::pair<unsigned int, unsigned int>>> & ppuipuiFacteurFusionnable, unsigned int uiHomogeneite, unsigned int uiDebut, unsigned int uiFin) {
+/********************************************************************************************************************************************************
+***** GCRThreadForMerge : Method for start each threads																								*****
+*********************************************************************************************************************************************************
+***** Entrée : puipuiFacteurFusionnable : std::pair<unsigned int, std::pair<unsigned int, unsigned int>> &											*****
+*****		   puiPair : std::pair<unsigned int, unsigned int> & | uiHomogeneite, uiDebut, uiFin : unsigned int										*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Starting each thread for reduce analyze time																						*****
+********************************************************************************************************************************************************/
+void CGrapheCreator::GCRThreadForMerge(std::pair<unsigned int, std::pair<unsigned int, unsigned int>> & puipuiFacteurFusionnable, unsigned int uiHomogeneite, unsigned int uiDebut, unsigned int uiFin) {
 	
-	//Initialisation de la pair des meilleurs facteur de fusionnabilité
+	//Initialization of the storage of the best pair
 	std::pair<unsigned int, std::pair<unsigned int, unsigned int>> puipuiInit(std::numeric_limits<unsigned int>::max(), std::pair<unsigned int, unsigned int>());
-	std::pair<std::pair<unsigned int, std::pair<unsigned int, unsigned int>>, std::pair<unsigned int, std::pair<unsigned int, unsigned int>>> localBest(puipuiInit, puipuiInit);
+	std::pair<unsigned int, std::pair<unsigned int, unsigned int>> localBest(puipuiInit);
 
-	//Lancement des meilleures paires
+	//Start the comparaison
 	for (vector<std::pair<unsigned int, unsigned int>>::iterator itpuiPair = vpuiGPCVoisinPrimal.begin() + uiDebut; itpuiPair != vpuiGPCVoisinPrimal.begin() + uiFin; ++itpuiPair) {
 		GCRBestCompatibility(localBest, (*itpuiPair), uiHomogeneite);
 	}
 
-	/* Comparaison de tous les threads */
+	/* At the end, mutex for compare all threads */
 	{
 		std::lock_guard<std::mutex> lock(GPCMutex);
 
-		//Stockage des meilleurs locals et communs
-		unsigned int uiSommeBestBest = ppuipuiFacteurFusionnable.first.second.first + ppuipuiFacteurFusionnable.first.second.second;
-		unsigned int uiSommeBestSecond = ppuipuiFacteurFusionnable.second.second.first + ppuipuiFacteurFusionnable.second.second.second;
-		unsigned int uiSommeLocalBestBest = localBest.first.second.first + localBest.first.second.second;
-		unsigned int uiSommeLocalBestSecond = localBest.second.second.first + localBest.second.second.second;
+		//Storage for comparaison
+		unsigned int uiSommeBestBest = puipuiFacteurFusionnable.second.first + puipuiFacteurFusionnable.second.second;
+		unsigned int uiSommeLocalBestBest = localBest.second.first + localBest.second.second;
 
-		/* Comparaison du meilleur local */
-		if ((localBest.first.first < ppuipuiFacteurFusionnable.first.first) || (localBest.first.first == ppuipuiFacteurFusionnable.first.first && uiSommeBestBest > uiSommeLocalBestBest)) {
-			ppuipuiFacteurFusionnable.second = ppuipuiFacteurFusionnable.first;
-			ppuipuiFacteurFusionnable.first = localBest.first;
-		}
-		else if (localBest.first.second != ppuipuiFacteurFusionnable.first.second) {
-			if ((ppuipuiFacteurFusionnable.second.first > localBest.first.first) || (ppuipuiFacteurFusionnable.second.first == localBest.first.first && uiSommeBestSecond > uiSommeLocalBestBest)) {
-
-				//Remplace le second meilleur
-				ppuipuiFacteurFusionnable.second = localBest.first;
-			}
-		}
-
-		/* Comparaison du second meilleur local */
-		if ((localBest.second.first < ppuipuiFacteurFusionnable.first.first) || (localBest.second.first == ppuipuiFacteurFusionnable.first.first && uiSommeBestBest > uiSommeLocalBestSecond)) {
-			ppuipuiFacteurFusionnable.second = ppuipuiFacteurFusionnable.first;
-			ppuipuiFacteurFusionnable.first = localBest.second;
-		}
-		else if (localBest.second.second != ppuipuiFacteurFusionnable.first.second) {
-			if ((ppuipuiFacteurFusionnable.second.first > localBest.second.first) || (ppuipuiFacteurFusionnable.second.first == localBest.second.first && uiSommeBestSecond > uiSommeLocalBestSecond)) {
-
-				//Remplace le second meilleur
-				ppuipuiFacteurFusionnable.second = localBest.second;
-			}
+		/* Comparaison between other threads and this one */
+		if ((localBest.first < puipuiFacteurFusionnable.first) || (localBest.first == puipuiFacteurFusionnable.first && uiSommeBestBest > uiSommeLocalBestBest)) {
+			puipuiFacteurFusionnable = localBest;
 		}
 	}
 }
 
-/************************************************************************************************************************************************
-***** GCRMERGE : Méthode fusionnant les fragments voisins																					*****
-*************************************************************************************************************************************************
-***** Entrée : uiHomogeneite : unsigned int																									*****
-***** Nécessite : Ne Nécesste Rien				                                                                                            *****
-***** Sortie : Aucun élement retournée																										*****
-***** Entraine : Fusionne les fragments voisins																								*****
-************************************************************************************************************************************************/
+/********************************************************************************************************************************************************
+***** GCRMerge : Method for merge neighbor																											*****
+*********************************************************************************************************************************************************
+***** Entrée : uiHomogeneite : unsigned int																											*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Merging neighbors																													*****
+********************************************************************************************************************************************************/
 void CGrapheCreator::GCRMerge(unsigned int uiHomogeneite) {
 
-	//Initialisation de la pair des meilleurs facteur de fusionnabilité
+	//Initialization of the storage the most fusionable neighbor pair
 	std::pair<unsigned int, std::pair<unsigned int, unsigned int>> puipuiInit(std::numeric_limits<unsigned int>::max(), std::pair<unsigned int, unsigned int>());
-	std::pair<std::pair<unsigned int, std::pair<unsigned int, unsigned int>>, std::pair<unsigned int, std::pair<unsigned int, unsigned int>>> ppuipuiFacteurFusionnable(puipuiInit, puipuiInit);
+	std::pair<unsigned int, std::pair<unsigned int, unsigned int>> puipuiFacteurFusionnable(puipuiInit);
 
 	unsigned int uiNbFusion = 0;
 	while (vpuiGPCVoisinPrimal.size() != 0) {
 
+		//For each neighbor pairs
 		for (std::pair<unsigned int, unsigned int> puiPair : vpuiGPCVoisinPrimal) {
 
-			//Si Homogénéité et comparaison avec les 2 meilleurs facteur de fusionnabilité
-			GCRBestCompatibility(ppuipuiFacteurFusionnable, puiPair, uiHomogeneite);
+			//With Homogeneity, analyzes each pair
+			GCRBestCompatibility(puipuiFacteurFusionnable, puiPair, uiHomogeneite);
 		}
 
-		/* Verification si un nouveau meilleur facteur de fusionnabilité a été trouvé */
-		if (ppuipuiFacteurFusionnable.first == puipuiInit) { //Si aucun nouveau facteur n'est trouvé 
+		/* Verification if a new better mergeability factor has been found */
+		if (puipuiFacteurFusionnable == puipuiInit) { //if no better is found
 			break;
 		}
 
-		//Merge PART -> ppuipuiFacteurFusionnable.first.second
-		GCRLinkVertices(ppuipuiFacteurFusionnable.first.second); //=> Merge des voisins (du couple)
+		//Merge PART => with method
+		GCRLinkVertices(puipuiFacteurFusionnable.second);
 
-		//Supprime la pair qui vient d'être fusionner (link entre les 2 fragments)
-		vpuiGPCVoisinPrimal.erase(std::remove(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end(), ppuipuiFacteurFusionnable.first.second), vpuiGPCVoisinPrimal.end()); //supprime de la liste des voisins
+		//remove the pair that just been merge
+		vpuiGPCVoisinPrimal.erase(std::remove(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end(), puipuiFacteurFusionnable.second), vpuiGPCVoisinPrimal.end());
 
-		//Remplace le meilleur (désormais supprimer) par le second meilleur
-		ppuipuiFacteurFusionnable.first = ppuipuiFacteurFusionnable.second;
-		ppuipuiFacteurFusionnable.second = puipuiInit; //RéInitialise le second
+		//Re-Initialize the best
+		puipuiFacteurFusionnable = puipuiInit;
 
 		uiNbFusion++;
 	}
@@ -1267,74 +1236,75 @@ void CGrapheCreator::GCRMerge(unsigned int uiHomogeneite) {
 	std::cout << "Nombre de Fusion : " << uiNbFusion << std::endl;
 }
 
-/************************************************************************************************************************************************
-***** GCRMERGETHREAD : Méthode fusionnant les fragments voisins	avec des threads															*****
-*************************************************************************************************************************************************
-***** Entrée : uiHomogeneite : unsigned int																									*****
-***** Nécessite : Ne Nécesste Rien				                                                                                            *****
-***** Sortie : Aucun élement retournée																										*****
-***** Entraine : Fusionne les fragments voisins	à l'aide de threads																			*****
-************************************************************************************************************************************************/
+/********************************************************************************************************************************************************
+***** GCRMergeThread : Method for merge neighbor with threads																						*****
+*********************************************************************************************************************************************************
+***** Entrée : uiHomogeneite : unsigned int																											*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Merging neighbors with threads																										*****
+********************************************************************************************************************************************************/
 void CGrapheCreator::GCRMergeThread(unsigned int uiHomogeneite) {
 
-	//Initialisation de la pair des meilleurs facteur de fusionnabilité
+	//Initialization of the storage the most fusionable neighbor pair
 	std::pair<unsigned int, std::pair<unsigned int, unsigned int>> puipuiInit(std::numeric_limits<unsigned int>::max(), std::pair<unsigned int, unsigned int>());
-	std::pair<std::pair<unsigned int, std::pair<unsigned int, unsigned int>>, std::pair<unsigned int, std::pair<unsigned int, unsigned int>>> ppuipuiFacteurFusionnable(puipuiInit, puipuiInit);
+	std::pair<unsigned int, std::pair<unsigned int, unsigned int>> puipuiFacteurFusionnable(puipuiInit);
 
 	unsigned int uiNbFusion = 0;
 	while (vpuiGPCVoisinPrimal.size() != 0) {
 
 		const unsigned int totalSize = (unsigned int)vpuiGPCVoisinPrimal.size();
 
-		if (totalSize < 5000) { //Eviter trop de sous-division qui relentissera 
+		if (totalSize < 5000) { //If the size of vector is lower than 5000 => no threads (slow)
+
+			//For each neighbor pairs
 			for (std::pair<unsigned int, unsigned int> puiPair : vpuiGPCVoisinPrimal) {
 
-				//Si Homogénéité et comparaison avec les 2 meilleurs facteur de fusionnabilité
-				GCRBestCompatibility(ppuipuiFacteurFusionnable, puiPair, uiHomogeneite);
+				//With Homogeneity, analyzes each pair
+				GCRBestCompatibility(puipuiFacteurFusionnable, puiPair, uiHomogeneite);
 			}
 		}
 		else {
-			const unsigned int chunkSize = (unsigned int)(vpuiGPCVoisinPrimal.size() + 1) / 4; //Division de la charge de travail
-			const unsigned int numThreads = (totalSize + chunkSize - 1) / chunkSize; // Calcul du nombre de threads nécessaires
+			const unsigned int chunkSize = (unsigned int)(vpuiGPCVoisinPrimal.size() + 1) / 4; //Division of the work part
+			const unsigned int numThreads = (totalSize + chunkSize - 1) / chunkSize; //Calcul of the size for each vector
 
-			//Stockage des threads
+			//threads storage
 			std::vector<std::thread> threads;
 
-			//Division du travail
+			//For each thread
 			for (unsigned int uiBoucle = 0; uiBoucle < numThreads; ++uiBoucle) {
 
 				unsigned int start = uiBoucle * chunkSize;
 				unsigned int end = (uiBoucle + 1) * chunkSize;
 
-				//Dans le cas de la fin du vecteur -> reste
+				//For the rest 
 				if (end > totalSize) {
 					end = totalSize;
 				}
 
-				//Lancement du thread
-				threads.emplace_back(&CGrapheCreator::GCRThreadForMerge, this, std::ref(ppuipuiFacteurFusionnable), uiHomogeneite, start, end);
+				//Start of the thread
+				threads.emplace_back(&CGrapheCreator::GCRThreadForMerge, this, std::ref(puipuiFacteurFusionnable), uiHomogeneite, start, end);
 			}
 
-			//Attente de la fin de tous les threads
+			//Waitting the end of all threads
 			for (std::thread & Thread : threads) {
 				Thread.join();
 			}
 		}
 
-		/* Verification si un nouveau meilleur facteur de fusionnabilité a été trouvé */
-		if (ppuipuiFacteurFusionnable.first == puipuiInit) { //Si aucun nouveau facteur n'est trouvé 
+		/* Verification if a new better mergeability factor has been found */
+		if (puipuiFacteurFusionnable == puipuiInit) { //if no better is found
 			break;
 		}
 
-		//Merge PART -> ppuipuiFacteurFusionnable.first.second
-		GCRLinkVertices(ppuipuiFacteurFusionnable.first.second); //=> Merge des voisins (du couple)
+		//Merge PART => with method
+		GCRLinkVertices(puipuiFacteurFusionnable.second);
 
-		//Supprime la pair qui vient d'être fusionner (link entre les 2 fragments)
-		vpuiGPCVoisinPrimal.erase(std::remove(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end(), ppuipuiFacteurFusionnable.first.second), vpuiGPCVoisinPrimal.end()); //supprime de la liste des voisins
+		//remove the pair that just been merge
+		vpuiGPCVoisinPrimal.erase(std::remove(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end(), puipuiFacteurFusionnable.second), vpuiGPCVoisinPrimal.end());
 
-		//Remplace le meilleur (désormais supprimer) par le second meilleur
-		ppuipuiFacteurFusionnable.first = ppuipuiFacteurFusionnable.second;
-		ppuipuiFacteurFusionnable.second = puipuiInit; //RéInitialise le second
+		//Re-Initialize the best
+		puipuiFacteurFusionnable = puipuiInit;
 
 		uiNbFusion++;
 	}
@@ -1342,15 +1312,71 @@ void CGrapheCreator::GCRMergeThread(unsigned int uiHomogeneite) {
 	std::cout << "Nombre de Fusion : " << uiNbFusion << std::endl;
 }
 
-/************************************************************************************************************************************************
-***** GCRCREATIONGRAPHE : Méthode pour créer le graphe à partir des feuilles de l'arbre														*****
-*************************************************************************************************************************************************
-***** Entrée : vFRGLeafs : vector <CFragment> | uiHomogeneite : unsigned int 																*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Complète le graphe de GPCGCRGraphe 																						*****
-************************************************************************************************************************************************/
-void CGrapheCreator::GCRCreationGraphe(vector <CFragment> vFRGLeafs, unsigned int uiHomogeneite, unsigned int uiTailleMin, unsigned int uiVersion) {
+/********************************************************************************************************************************************************
+***** GCRMergeSansChoix : Method for merge without choice																							*****
+*********************************************************************************************************************************************************
+***** Entrée : uiHomogeneite : unsigned int																											*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Merging neighbors with choice 																										*****
+********************************************************************************************************************************************************/
+void CGrapheCreator::GCRMergeSansChoix(unsigned int uiHomogeneite) {
+
+	//recovery of fragments
+	BGLGraphe::vertex_descriptor vdFragment1, vdFragment2;
+
+	//Initialization of the storage the most fusionable neighbor pair
+	std::pair<unsigned int, unsigned int> puiInit (0, 0);
+	std::pair<unsigned int, unsigned int> puiVoisinFusionnable (puiInit);
+
+	unsigned int uiNbFusion = 0;
+	while (vpuiGPCVoisinPrimal.size() != 0) {
+		//For each neighbor pairs
+		for (std::pair<unsigned int, unsigned int> puiPair : vpuiGPCVoisinPrimal) {
+
+			//recovery of fragments
+			vdFragment1 = vvdGPCVertex_Desc[puiPair.first], vdFragment2 = vvdGPCVertex_Desc[puiPair.second];
+
+			//Calcul Min/Max difference
+			unsigned int uiDiffMax = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMax() - alGPCGraphe[vdFragment2].FRGGetMax()));
+			unsigned int uiDiffMin = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMin() - alGPCGraphe[vdFragment2].FRGGetMin()));
+
+			//if difference respect homogenity
+			if (uiDiffMax <= uiHomogeneite && uiDiffMin <= uiHomogeneite) {
+				puiVoisinFusionnable = puiPair;
+				break; //take the first one
+			}
+		}
+
+		/* Verification if a new better mergeability factor has been found */
+		if (puiVoisinFusionnable == puiInit) { //if no better is found
+			break;
+		}
+
+		//Merge PART => with method
+		GCRLinkVertices(puiVoisinFusionnable);
+
+		//remove the pair that just been merge
+		vpuiGPCVoisinPrimal.erase(std::remove(vpuiGPCVoisinPrimal.begin(), vpuiGPCVoisinPrimal.end(), puiVoisinFusionnable), vpuiGPCVoisinPrimal.end());
+
+		//Re-Initialize the best
+		puiVoisinFusionnable = puiInit;
+
+		uiNbFusion++;
+	}
+
+	std::cout << "Nombre de Fusion : " << uiNbFusion << std::endl;
+}
+
+/********************************************************************************************************************************************************
+***** GCRCreationGraphe : Method for create graphe from leafs generated by the Split																*****
+*********************************************************************************************************************************************************
+***** Entrée : vFRGLeafs : vector <CFragment> | uiHomogeneite, uiTailleMin, uiVersionNeighbor, uiVersionMerge : unsigned int						*****
+***** Precondition : Nothing																														*****
+***** Output : None																																	*****
+***** Effects : Create graphe from leafs generated by the Split 																					*****
+********************************************************************************************************************************************************/
+void CGrapheCreator::GCRCreationGraphe(vector <CFragment> vFRGLeafs, unsigned int uiHomogeneite, unsigned int uiTailleMin, unsigned int uiVersionNeighBor, unsigned int uiVersionMerge) {
 
 	if (vFRGLeafs.size() == 0) {
 		throw (CException(NO_LEAFS));
@@ -1358,13 +1384,13 @@ void CGrapheCreator::GCRCreationGraphe(vector <CFragment> vFRGLeafs, unsigned in
 
 	clock_t cTempsVoisin =  clock();
 
-	if (uiVersion == 0) {
+	if (uiVersionNeighBor == 0) {
 		GCRDetectionVoisinVoxel(vFRGLeafs, uiTailleMin);
 	}
-	else if (uiVersion == 1) {
+	else if (uiVersionNeighBor == 1) {
 		GCRDetectionVoisinV2Dicho(vFRGLeafs, uiTailleMin);
 	}
-	else if (uiVersion == 2) {
+	else if (uiVersionNeighBor == 2) {
 		GCRDetectionVoisinDicho(vFRGLeafs, uiTailleMin);
 	}
 	else throw (CException(UNDIFIED_VERSION));
@@ -1381,7 +1407,7 @@ void CGrapheCreator::GCRCreationGraphe(vector <CFragment> vFRGLeafs, unsigned in
 
 	clock_t cTempsV1 = clock();
 
-	if (uiVersion != -1) {
+	if (uiVersionMerge != -1) {
 		cout << "MERGE " << endl;
 		GCRMerge(uiHomogeneite);
 	}
@@ -1397,7 +1423,7 @@ void CGrapheCreator::GCRCreationGraphe(vector <CFragment> vFRGLeafs, unsigned in
 
 	clock_t cTempsV1Thread = clock();
 
-	if (uiVersion != -1) {
+	if (uiVersionMerge != -1) {
 		cout << "MERGE THREAD " << endl;
 		//GCRMergeThread(uiHomogeneite);
 	}
@@ -1406,4 +1432,20 @@ void CGrapheCreator::GCRCreationGraphe(vector <CFragment> vFRGLeafs, unsigned in
 	clock_t cMergeThread = clock() - cTempsV1Thread;
 
 	std::cout << "Temps de la merge thread : " << (double)cMergeThread / CLOCKS_PER_SEC << std::endl << std::endl;
+
+	alGPCGraphe = saveGraphe;
+	vvuiGPCConnexite = vvuiConnexiteSave;
+	vpuiGPCVoisinPrimal = vpuiGPCVoisinPrimalSave;
+
+	clock_t cTempsSansChoix = clock();
+
+	if (uiVersionMerge != -1) {
+		cout << "MERGE Sans Choix " << endl;
+		GCRMergeSansChoix(uiHomogeneite);
+	}
+	else throw (CException(UNDIFIED_VERSION));
+
+	clock_t cMergeSansChoix = clock() - cTempsSansChoix;
+
+	std::cout << "Temps de la merge sans choix : " << (double)cMergeSansChoix / CLOCKS_PER_SEC << std::endl << std::endl;
 }

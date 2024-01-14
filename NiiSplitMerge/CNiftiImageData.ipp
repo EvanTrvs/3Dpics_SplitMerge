@@ -71,8 +71,57 @@ int CNiftiImageData<TypeT>::NFDreadData() {
 }
 
 template <typename TypeT>
+int CNiftiImageData<TypeT>::NFDgetMireData(unsigned int uiSize) {
+
+	if (hdrNFIheader.dim[1] != uiSize) {
+		throw CException(5);
+	}
+
+	vector<vector<TypeT>> GSLMire = {
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	42,	40,	38,	36,	34,	32,	30,	28,	28,	30,	32,	34,	36,	38,	40,	42 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	38,	36,	34,	32,	30,	28,	26,	24,	24,	26,	28,	30,	32,	34,	36,	38 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	34,	32,	30,	28,	26,	24,	22,	20,	20,	22,	24,	26,	28,	30,	32,	34 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	30,	28,	26,	24,	22,	20,	18,	16,	16,	18,	20,	22,	24,	26,	28,	30 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	26,	24,	22,	20,	18,	16,	14,	12,	12,	14,	16,	18,	20,	22,	24,	26 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	22,	20,	18,	16,	14,	12,	10,	8,	8,	10,	12,	14,	16,	18,	20,	22 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	18,	16,	14,	12,	10,	8,	6,	4,	4,	6,	8,	10,	12,	14,	16,	18 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	14,	12,	10,	8,	6,	4,	2,	0,	0,	2,	4,	6,	8,	10,	12,	14 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	28,	30,	32,	34,	36,	38,	40,	42,	42,	40,	38,	36,	34,	32,	30,	28 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	24,	26,	28,	30,	32,	34,	36,	38,	38,	36,	34,	32,	30,	28,	26,	24 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	20,	22,	24,	26,	28,	30,	32,	34,	34,	32,	30,	28,	26,	24,	22,	20 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	16,	18,	20,	22,	24,	26,	28,	30,	30,	28,	26,	24,	22,	20,	18,	16 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	12,	14,	16,	18,	20,	22,	24,	26,	26,	24,	22,	20,	18,	16,	14,	12 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	8,	10,	12,	14,	16,	18,	20,	22,	22,	20,	18,	16,	14,	12,	10,	8 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	4,	6,	8,	10,	12,	14,	16,	18,	18,	16,	14,	12,	10,	8,	6,	4 },
+		{0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	2,	4,	6,	8,	10,	12,	14,	14,	12,	10,	8,	6,	4,	2,	0 },
+		{7,	13,	12,	17,	12,	11,	15,	13,	11,	8,	4,	8,	7,	6,	11,	14,	9,	11,	9,	9,	10,	9,	15,	14,	10,	10,	9,	10,	10,	5,	5,	10 },
+		{24,12,	7,	24,	10,	9,	9,	9,	10,	21,	10,	10,	6,	3,	11,	7,	17,	8,	9,	20,	10,	11,	16,	15,	10,	20,	10,	11,	10,	5,	5,	10 },
+		{20,7,	9,	20,	10,	6,	12,	10,	11,	27,	12,	7,	8,	11,	9,	12,	20,	10,	11,	20,	10,	10,	11,	12,	10,	25,	14,	9,	10,	10,	10,	10 },
+		{23,17,	4,	24,	8,	12,	13,	16,	31,	30,	9,	9,	20,	21,	9,	12,	21,	11,	10,	20,	11,	11,	4,	5,	11,	28,	30,	14,	10,	10,	10,	10 },
+		{19,24,	19,	20,	10,	12,	30,	28,	28,	15,	11,	10,	20,	19,	10,	9,	21,	19,	20,	18,	11,	9,	5,	5,	10,	14,	28,	25,	20,	10,	10,	10 },
+		{13,21,	12,	16,	6,	4,	8,	11,	8,	13,	11,	9,	11,	9,	9,	9,	12,	10,	10,	12,	9,	9,	9,	10,	10,	10,	11,	10,	10,	10,	10,	10 },
+		{8,	11,	6,	32,	33,	27,	32,	28,	13,	10,	10,	26,	29,	32,	30,	29,	12,	9,	10,	30,	31,	29,	30,	30,	10,	10,	10,	30,	30,	30,	30,	30 },
+		{30,28,	28,	25,	4,	11,	16,	26,	30,	27,	31,	34,	11,	10,	8,	28,	29,	29,	31,	29,	11,	10,	11,	29,	30,	30,	30,	30,	10,	10,	10,	30 },
+		{16,11,	13,	9,	7,	12,	8,	8,	10,	11,	9,	11,	10,	12,	10,	10,	11,	10,	10,	11,	9,	9,	9,	9,	10,	10,	10,	9,	10,	10,	10,	10 }
+	};
+
+	unsigned int uiDim1 = hdrNFIheader.dim[3];	//32
+	unsigned int uiDim2 = hdrNFIheader.dim[2];	//25
+
+	for (unsigned int uiIndexZ = 0; uiIndexZ < uiDim1; ++uiIndexZ) {
+		for (unsigned int uiIndexY = 0; uiIndexY < uiDim2; ++uiIndexY) {
+			for (unsigned int uiIndexX = 0; uiIndexX < uiSize; ++uiIndexX) {
+				vTypeTNFDdata.push_back(GSLMire[uiIndexY][uiIndexZ]);
+			}
+		}
+	}
+
+	return 0;
+}
+
+template <typename TypeT>
 int CNiftiImageData<TypeT>::NFDwriteNifti(std::string sPathFile, boost::multi_array<CGrayScale, 3>& MultiArrayParam) {
-	std::cout << this->NFIgetHeaderInfo() << std::endl;
+	//std::cout << this->NFIgetHeaderInfo() << std::endl;
 
 	//hdrNFIheader.sform_code = 1;
 	//hdrNFIheader.xyzt_units = 10;
@@ -100,8 +149,8 @@ int CNiftiImageData<TypeT>::NFDwriteNifti(std::string sPathFile, boost::multi_ar
 		data[uiLoop] = i / hdrNFIheader.scl_slope;
 	}*/
 
-	std::cout << MultiArrayParam.shape()[0] << "," << MultiArrayParam.shape()[1] << "," << MultiArrayParam.shape()[2] << std::endl;
-	std::cout << hdrNFIheader.dim[1] << "," << hdrNFIheader.dim[2] << "," << hdrNFIheader.dim[3] << std::endl;
+	//std::cout << MultiArrayParam.shape()[0] << "," << MultiArrayParam.shape()[1] << "," << MultiArrayParam.shape()[2] << std::endl;
+	//std::cout << hdrNFIheader.dim[1] << "," << hdrNFIheader.dim[2] << "," << hdrNFIheader.dim[3] << std::endl;
 
 	if (MultiArrayParam.shape()[0] == hdrNFIheader.dim[1]) {
 		if (MultiArrayParam.shape()[1] == hdrNFIheader.dim[2]) {
@@ -229,8 +278,8 @@ int CNiftiImageData<TypeT>::NFDwriteNiftiUi(std::string sPathFile, boost::multi_
 		data[uiLoop] = i / hdrNFIheader.scl_slope;
 	}*/
 
-	std::cout << MultiArrayParam.shape()[0] << "," << MultiArrayParam.shape()[1] << "," << MultiArrayParam.shape()[2] << std::endl;
-	std::cout << hdrNFIheader.dim[1] << "," << hdrNFIheader.dim[2] << "," << hdrNFIheader.dim[3] << std::endl;
+	//std::cout << MultiArrayParam.shape()[0] << "," << MultiArrayParam.shape()[1] << "," << MultiArrayParam.shape()[2] << std::endl;
+	//std::cout << hdrNFIheader.dim[1] << "," << hdrNFIheader.dim[2] << "," << hdrNFIheader.dim[3] << std::endl;
 
 	if (MultiArrayParam.shape()[0] == hdrNFIheader.dim[1]) {
 		if (MultiArrayParam.shape()[1] == hdrNFIheader.dim[2]) {

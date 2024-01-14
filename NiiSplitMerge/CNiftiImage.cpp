@@ -56,6 +56,34 @@ int CNiftiImage::NFIreadHeader() {
 	return 0;
 }
 
+int CNiftiImage::NFImireHeader(unsigned int uiSize) {
+
+	short do_nii = 1;
+
+	memset(&hdrNFIheader, 0, sizeof(hdrNFIheader));
+	hdrNFIheader.sizeof_hdr = MIN_HEADER_SIZE;
+	hdrNFIheader.dim[0] = 3;
+	hdrNFIheader.dim[1] = uiSize;
+	hdrNFIheader.dim[2] = 25;
+	hdrNFIheader.dim[3] = 32;
+	hdrNFIheader.dim[4] = 1;
+	hdrNFIheader.datatype = NIFTI_TYPE_UINT16;
+	hdrNFIheader.bitpix = 16;
+
+	if (do_nii)
+		hdrNFIheader.vox_offset = (float)NII_HEADER_SIZE;
+	else
+		hdrNFIheader.vox_offset = (float)0;
+	hdrNFIheader.scl_slope = 1.0;
+	hdrNFIheader.xyzt_units = NIFTI_UNITS_MM | NIFTI_UNITS_SEC;
+	if (do_nii)
+		strncpy_s(hdrNFIheader.magic, "n+1\0", 4);
+	else
+		strncpy_s(hdrNFIheader.magic, "ni1\0", 4);
+
+	return 0;
+}
+
 const nifti_1_header CNiftiImage::NFIgetHeader() const {
 	return hdrNFIheader;
 }

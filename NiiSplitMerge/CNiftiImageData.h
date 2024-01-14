@@ -44,6 +44,8 @@ public:
 
 	int NFDreadData();
 
+	int NFDgetMireData(unsigned int uiSize);
+
 	int NFDwriteNifti(std::string sPathFile, boost::multi_array<CGrayScale, 3>& MultiArrayParam);
 
 	int NFDwriteNiftiUi(std::string sPathFile, boost::multi_array<unsigned int, 3>& MultiArrayParam);

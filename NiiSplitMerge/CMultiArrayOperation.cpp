@@ -1,51 +1,60 @@
 #include "CMultiArrayOperation.h"
 
 /************************************************************************************************************************************************
-***** MAOSPLITS : Méthode d'appel des méthodes de Splits																					*****
+***** MAOSplits : Method for call each version of split																						*****
 *************************************************************************************************************************************************
-***** Entrée : maData : boost::multi_array<CGrayScale, 3> & | uiHomogeneite, uiMinSize, uiVersion : unsigned int							*****
-***** Nécessite : La taille minimum des cubes ne peux être égale à 0                                                                        *****
-***** Sortie : vFRGLeafs : vector <CFragment>																								*****
-***** Entraine : Appel les méthodes de Split en gérant les cas d'exception																	*****
+***** Input : maData : boost::multi_array<CGrayScale, 3> & | uiHomogeneite, uiMinSize, uiVersion : const unsigned int						*****
+***** Precondition : Minimum cube size cannot be equal to 0                                                                                 *****
+***** Output : vFRGLeafs : vector <CFragment>																								*****
+***** Effects : Call version of split managing exceptional cases																			*****
 ************************************************************************************************************************************************/
 vector<CFragment> CMultiArrayOperation::MAOSplits(boost::multi_array<CGrayScale, 3> & maData, unsigned int uiHomogeneite, unsigned int uiMinSize, unsigned int uiVersion)
 {
-	//Gestion de l'exception : Taille minimum = 0
+	/* Exceptions Management */
+
+	//uiMinSize = 0
 	if (uiMinSize == 0) throw (CException(SEUIL_MIN));
 
-	//Gestion de l'exception : Dimension = 0
+	//Matrice Dimensions = 0
 	if (maData.shape()[0] == 0 || maData.shape()[1] == 0 || maData.shape()[2] == 0) throw (CException(DIMENSION_ERROR));
 
-	//Initialisation des données nécessaires au fonctionnement des splits
+	//Initialization of result vector and origin fragment
 	vector<CFragment> vFRGresult = {};
 	CFragment FRGOrigine = CFragment(& maData, { 0,0,0 }, { (unsigned int)maData.shape()[0], (unsigned int)maData.shape()[1], (unsigned int)maData.shape()[2] });
 
-	//Création de l'objet d'appel des méthodes, ces méthodes sont privates et liés par un friend
+	//Object creation for call method, this methods are private and link by a friend
 	CSplitOperation SplitOperation;
 
-	//Choix de la Version
+	//Version Choice
 	if (uiVersion == 0) {
 		SplitOperation.SOTSplitMatrice(FRGOrigine, uiHomogeneite, uiMinSize, vFRGresult);
 	}
 	else if (uiVersion == 1) {
 
+		//Initialization of threads vector
 		vector<std::thread> OptimizationByThreads = {};
 
-		//Initialisation du vecteur de thread (fonctionnel)
 		SplitOperation.SOTSplitMatriceThreads(FRGOrigine, uiHomogeneite, uiMinSize, vFRGresult, OptimizationByThreads);
 
-		//Attente de la fin des threads par le Main 
+		//Wait all threads by the main thread
 		for (std::thread & Thread : OptimizationByThreads) {
 			Thread.join();
 		}
 	}
-	else throw (CException(UNDIFIED_VERSION)); //Gestion de l'exception : Aucun / Mauvaise Version choisie
+	else throw (CException(UNDIFIED_VERSION)); //Exception Management : No version
 
-	//Retourne le vecteur des feuilles final
+	//Return the vector of fragment
 	return vFRGresult;
 }
 
-
+/************************************************************************************************************************************************
+***** MAOsetMireData : Method for create Mire																								*****
+*************************************************************************************************************************************************
+***** Input : MultiArrayMire : boost::multi_array<CGrayScale, 3> & | uiDimZ : const unsigned int							 				*****
+***** Precondition : Nothing								                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize multi_array if the mire.nii is called																			*****
+************************************************************************************************************************************************/
 void CMultiArrayOperation::MAOsetMireData(unsigned int uiDimZ, boost::multi_array<CGrayScale, 3>& MultiArrayMire) {
 
 	vector<vector<CGrayScale>> GSLMire = {
@@ -79,8 +88,10 @@ void CMultiArrayOperation::MAOsetMireData(unsigned int uiDimZ, boost::multi_arra
 	unsigned int uiDimX = 32;	//horizontale
 	unsigned int uiDimY = 25;	//verticale
 
+	//Resize in function of uiDimZ
 	MultiArrayMire.resize(boost::extents[uiDimZ][uiDimY][uiDimX]);
 
+	//Modification of the multi_array
 	for (unsigned int uiIndexZ = 0; uiIndexZ < uiDimZ; ++uiIndexZ) {
 		for (unsigned int uiIndexY = 0; uiIndexY < uiDimY; ++uiIndexY) {
 			for (unsigned int uiIndexX = 0; uiIndexX < uiDimX; ++uiIndexX) {
@@ -90,17 +101,28 @@ void CMultiArrayOperation::MAOsetMireData(unsigned int uiDimZ, boost::multi_arra
 	}
 }
 
+/************************************************************************************************************************************************
+***** MAOcreateFromNifti : Method for multi_array from nifti image																			*****
+*************************************************************************************************************************************************
+***** Input : MultiArrayMire : boost::multi_array<CGrayScale, 3> & | NFDparam : const CNiftiImageData<uint16_t> &							*****
+***** Precondition : Nothing								                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize multi_array from nifti image																						*****
+************************************************************************************************************************************************/
 void CMultiArrayOperation::MAOcreateFromNifti(boost::multi_array<CGrayScale, 3>& MultiArrayMire, const CNiftiImageData<uint16_t> & NFDparam) {
 	unsigned int size = (unsigned int)NFDparam.NFDgetDataSize();
 
+	//Storage of image informations
 	std::vector<uint16_t> ui16NFDdata = NFDparam.NFDgetData();
 
 	unsigned int uiDimZ = NFDparam.NFIgetHeader().dim[3];
 	unsigned int uiDimY = NFDparam.NFIgetHeader().dim[2];
 	unsigned int uiDimX = NFDparam.NFIgetHeader().dim[1];
 
+	//Resize multi_array in function of the dimension of image
 	MultiArrayMire.resize(boost::extents[uiDimZ][uiDimY][uiDimX]);
 
+	//Modification of multi_array
 	unsigned int r = 0;
 	for (unsigned int i = 0; i < uiDimZ; ++i) {
 		for (unsigned int j = 0; j < uiDimY; ++j) {
@@ -112,9 +134,17 @@ void CMultiArrayOperation::MAOcreateFromNifti(boost::multi_array<CGrayScale, 3>&
 	}
 }
 
-
+/************************************************************************************************************************************************
+***** Operator<<																															*****
+*************************************************************************************************************************************************
+***** Input : os : std::ostream & | MultiArrayParam	: const boost::multi_array<CGrayScale, 3> &												*****
+***** Precondition : Nothing								                                                                                *****
+***** Output : std::ostream &																												*****
+***** Effects : OverLoad for print the multi_array																							*****
+************************************************************************************************************************************************/
 std::ostream& operator<<(std::ostream& os, const boost::multi_array<CGrayScale, 3>& MultiArrayParam) {
 
+	//Triple loop for read all the multi_array
 	for (unsigned int i = 0; i < (unsigned int)MultiArrayParam.shape()[0]; ++i) {
 		os << "[ ";
 		for (unsigned int j = 0; j < (unsigned int)MultiArrayParam.shape()[1]; ++j) {

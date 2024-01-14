@@ -1,42 +1,20 @@
 #include "COperationsSurGraphes.h"
 
-
-
 /************************************************************************************************************************************************
-***** GETALLVOXELS : Méthode ajoutant à la matrice, les voxels avec leurs groupes															*****
+***** GetAllVoxels : Function for associate each element of the multi_array to a connexity													*****
 *************************************************************************************************************************************************
-***** Entrée : FRGVertices : CFragment | uiGroupe : unsigned int | maVXLMatriceGroupe : * boost::multi_array <CVoxel, 3>					*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné			                                                                                            *****
-***** Entraine : Ajout à la matrice, les voxels avec leurs groupes																			*****
+***** Input : FRGVertices : CFragment | uiGroupe : const unsigned int | maVXLMatriceGroupe : boost::multi_array <unsigned int, 3> &   		*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Modification of the multi_array for associate each voxel to a connexity                                                     *****
 ************************************************************************************************************************************************/
-void GetAllVoxels(CFragment FRGVertices, unsigned int uiGroupe, boost::multi_array <CVoxel, 3> * maVXLMatriceGroupe) {
+void GetAllVoxels(CFragment FRGVertices, const unsigned int uiGroupe, boost::multi_array <unsigned int, 3> & maMatriceGroupe) {
+
+	//storage of coos and dimensions of the fragment
 	vector <unsigned int> vuiCoos = FRGVertices.FRGGetCoos();
 	vector <unsigned int> vuiDim = FRGVertices.FRGGetDimensions();
 
-	for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDim[0]; uiBoucleX++) {
-		for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDim[1]; uiBoucleY++) {
-			for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDim[2]; uiBoucleZ++) {
-
-				CVoxel VXLVoxel = CVoxel({ uiBoucleX + vuiCoos[0], uiBoucleY + vuiCoos[1], uiBoucleZ + vuiCoos[2] }, uiGroupe);
-				maVXLMatriceGroupe[0][uiBoucleX + vuiCoos[0]][uiBoucleY + vuiCoos[1]][uiBoucleZ + vuiCoos[2]] = VXLVoxel;
-			}
-		}
-	}
-}
-
-/************************************************************************************************************************************************
-***** GETALLVOXELS : Méthode ajoutant à la matrice, les groupes aux coordonnée des voxels													*****
-*************************************************************************************************************************************************
-***** Entrée : FRGVertices : CFragment | uiGroupe : unsigned int | maVXLMatriceGroupe : * boost::multi_array <CVoxel, 3>					*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné			                                                                                            *****
-***** Entraine : Modifie la matrice pour avoir les groupes à chaque coordonée de voxel														*****
-************************************************************************************************************************************************/
-void GetAllVoxelsV2(CFragment FRGVertices, unsigned int uiGroupe, boost::multi_array <unsigned int, 3> & maMatriceGroupe) {
-	vector <unsigned int> vuiCoos = FRGVertices.FRGGetCoos();
-	vector <unsigned int> vuiDim = FRGVertices.FRGGetDimensions();
-
+	//Triple loop for visit all element 
 	for (unsigned int uiBoucleX = 0; uiBoucleX < vuiDim[0]; uiBoucleX++) {
 		for (unsigned int uiBoucleY = 0; uiBoucleY < vuiDim[1]; uiBoucleY++) {
 			for (unsigned int uiBoucleZ = 0; uiBoucleZ < vuiDim[2]; uiBoucleZ++) {
@@ -48,40 +26,42 @@ void GetAllVoxelsV2(CFragment FRGVertices, unsigned int uiGroupe, boost::multi_a
 }
 
 /************************************************************************************************************************************************
-***** OSGGRAPHETOMATRICE : Méthode transformant un graphe de fragment en matrice															*****
+***** OSGGrapheToMatrice : Function convert graphe to multi_array																			*****
 *************************************************************************************************************************************************
-***** Entrée : alGraphe : BGLGrapheAffichage																								*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : maMatriceGroupe : boost::multi_array <unsigned int, 3>													                    *****
-***** Entraine : Transforme un graphe en matrice avec comme élément les groupes de chaque voxels											*****
+***** Input : alGraphe : BGLGrapheAffichage																									*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : maMatriceGroupe : boost::multi_array <unsigned int, 3>																		*****
+***** Effects : Convert graphe to multi_array with connexity for each elements			                                                    *****
 ************************************************************************************************************************************************/
 boost::multi_array <unsigned int, 3> COperationsSurGraphes::OSGGrapheToMatrice(BGLGrapheAffichage alGraphe) {
 
-	//Gestion de l'exception : Graphe vide
+	//Exception Management = no vertices 
 	if (boost::num_vertices(alGraphe) == 0) {
 		CException EXCErreur;
 		EXCErreur.EXCModifierValeur(GRAPHE_VIDE);
 		throw EXCErreur;
 	}
 
-	//Récupération des dimensions de la matrice
+	//storage dimensions of the fragment
 	vector <unsigned int> vuiDimensionsMatrice = alGraphe[0].FRGGetDimensionMatrice();
 	
-	//Création de la nouvelle matrice
+	//Creation of new multi_array
 	typedef boost::multi_array <unsigned int, 3> multi_array_type;
 	multi_array_type maMatriceGroupe(boost::extents[vuiDimensionsMatrice[0]][vuiDimensionsMatrice[1]][vuiDimensionsMatrice[2]]);
 
+	//Deplacement in the graphe
 	BGLGrapheAffichage::vertex_iterator vInit, vEnd;
 
-	//Pour tous les sommets (frgaments) du graphe
+	//For each vertices (fragment) of the graphe
 	for (boost::tie(vInit, vEnd) = boost::vertices(alGraphe); vInit != vEnd; ++vInit) {
 
-		//Modification de la matrice
+		//Fragment from the graphe
 		CFragment FRGVertex = alGraphe[*vInit];
 
-		GetAllVoxelsV2(FRGVertex, FRGVertex.FRGGetConnexite(), maMatriceGroupe);
+		//Modification of the multi_array
+		GetAllVoxels(FRGVertex, FRGVertex.FRGGetConnexite(), maMatriceGroupe);
 	}
 
-	//Retourne la nouvelle matrice modifiée
+	//Return new multi_array
 	return maMatriceGroupe;
 }

@@ -57,13 +57,14 @@ CException::CException(const CException & EXCparam)
 	strcpy_s(pcEXCMessage, strlen(EXCparam.pcEXCMessage) + 1, EXCparam.pcEXCMessage);
 }
 
-/************************************************************************
-*****Destructor | ~CException()                                     *****
-*****Input : None                                                   *****
-*****Precondition : None                                            *****
-*****Output : None                                                  *****
-*****Postconditions : Attribut of this are deleted                  *****
-************************************************************************/
+/**************************************************************************
+ ***** Destructor | ~CException()                                     *****
+ **************************************************************************
+ ***** Input : None                                                   *****
+ ***** Precondition : None                                            *****
+ ***** Output : None                                                  *****
+ ***** Postconditions : Attribut of this are deleted                  *****
+ *************************************************************************/
 CException::~CException()
 {
 	if (pcEXCMessage) {

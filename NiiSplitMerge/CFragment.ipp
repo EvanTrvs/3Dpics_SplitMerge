@@ -6,17 +6,17 @@ using namespace std;
 
 #include "CFragment.h"
 
-/***************************************************************************************************************************************************************************
-***** CFRAGMENT : Constructeur par défaut de la classe CFragment																						 			   *****
-****************************************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée 																															   *****
-***** Nécessite : Ne nécessite rien																														 			   *****
-***** Sortie : Aucun élément retourné																																   *****
-***** Entraine : Initialise les variables à null ou 0																												   *****
-***************************************************************************************************************************************************************************/
+/************************************************************************************************************************************************
+***** Default Class Constructor																												*****
+*************************************************************************************************************************************************
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize variables to null / O					                                                                        *****
+************************************************************************************************************************************************/
 inline CFragment::CFragment() {
 
-	//Initialisation des variables
+	//Variables Initialization
 	pmaGSLFRGMultiArray = nullptr;
 
 	vuiFRGConer = {};
@@ -28,20 +28,20 @@ inline CFragment::CFragment() {
 	uiFRGConnexite = 0;
 }
 
-/***************************************************************************************************************************************************************************
-***** CFRAGMENT : Constructeur de confort de la classe CFragment																						 			   *****
-****************************************************************************************************************************************************************************
-***** Entrée : pmaCLRMultiArray : * boost::multi_array <CGrayScale, 3>, vuiFRGConer et vuiFRGDimension : vector <unsigned int>										   *****
-***** Nécessite : Ne nécessite rien																														 			   *****
-***** Sortie : Aucun élément retourné																																   *****
-***** Entraine : Initialise les variables avec les variables passées en paramètre																					   *****
-***************************************************************************************************************************************************************************/
+/************************************************************************************************************************************************
+***** Class Constructor																														*****
+*************************************************************************************************************************************************
+***** Input : pmaCLRMultiArray : * boost::multi_array <CGrayScale, 3>, vuiFRGConer et vuiFRGDimension : vector <unsigned int>				*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize variables with the provided parameter					                                                        *****
+************************************************************************************************************************************************/
 inline CFragment::CFragment(boost::multi_array <CGrayScale, 3> * pmaGSLMultiArray, vector <unsigned int> vuiConer, vector <unsigned int> vuiDimension) {
 
-	//Initialisation des variables
+	//Variables Initialization
 	pmaGSLFRGMultiArray = pmaGSLMultiArray;
 
-	//Vérification si les coordonnées et les dimensions sont situé dans le MultiArray
+	//Verification if coos + dimensions are within the dimensions of the MultiArray
 	if (vuiConer[0] + vuiDimension[0] > pmaGSLMultiArray->shape()[0] ||
 		vuiConer[1] + vuiDimension[1] > pmaGSLMultiArray->shape()[1] ||
 		vuiConer[2] + vuiDimension[2] > pmaGSLMultiArray->shape()[2]) {
@@ -51,61 +51,29 @@ inline CFragment::CFragment(boost::multi_array <CGrayScale, 3> * pmaGSLMultiArra
 		throw (EXCErreur);
 	}
 
-
 	vuiFRGConer = vuiConer;
 	vuiFRGDimension = vuiDimension;
+
+	//Initialization of other variables to 0
 	uiFRGConnexite = 0;
-
 	puiFRGMinMax.first = 0;
 	puiFRGMinMax.second = 0;
 }
 
-/***************************************************************************************************************************************************************************
-***** CFRAGMENT : Constructeur de confort de la classe CFragment																						 			   *****
-****************************************************************************************************************************************************************************
-***** Entrée : pmaCLRMultiArray : * boost::multi_array <CGrayScale, 3>, vuiFRGConer et vuiFRGDimension : vector <unsigned int> | uiConnexite : unsigned int 		   *****
-***** Nécessite : Ne nécessite rien																														 			   *****
-***** Sortie : Aucun élément retourné																																   *****
-***** Entraine : Initialise les variables avec les variables passées en paramètre																					   *****
-***************************************************************************************************************************************************************************/
-inline CFragment::CFragment(boost::multi_array <CGrayScale, 3> * pmaGSLMultiArray, vector <unsigned int> vuiConer, vector <unsigned int> vuiDimension, unsigned int uiConnexite) {
-
-	//Initialisation des variables
-	pmaGSLFRGMultiArray = pmaGSLMultiArray;
-
-	//Vérification si les coordonnées et les dimensions sont situé dans le MultiArray
-	if (vuiConer[0] + vuiDimension[0] > pmaGSLMultiArray->shape()[0] ||
-		vuiConer[1] + vuiDimension[1] > pmaGSLMultiArray->shape()[1] ||
-		vuiConer[2] + vuiDimension[2] > pmaGSLMultiArray->shape()[2]) {
-
-		CException EXCErreur;
-		EXCErreur.EXCModifierValeur(TAILLE_DIM);
-		throw (EXCErreur);
-	}
-
-
-	vuiFRGConer = vuiConer;
-	vuiFRGDimension = vuiDimension;
-	uiFRGConnexite = uiConnexite;
-
-	puiFRGMinMax.first = 0;
-	puiFRGMinMax.second = 0;
-}
-
-/****************************************************************************************************************************************************************************************************************
-***** CFRAGMENT : Constructeur de confort de la classe CFragment																						 												    *****
-*****************************************************************************************************************************************************************************************************************
-***** Entrée : pmaCLRMultiArray : * boost::multi_array <CGrayScale, 3>, vuiFRGConer et vuiFRGDimension : vector <unsigned int> | uiConnexite : unsigned int | puiMinMax : pair<unsigned int, unsigned int>	*****
-***** Nécessite : Ne nécessite rien																														 												    *****
-***** Sortie : Aucun élément retourné																																									    *****
-***** Entraine : Initialise les variables avec les variables passées en paramètre																														    *****
-****************************************************************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************************************
+***** Class Constructor																																								*****
+*****************************************************************************************************************************************************************************************
+***** Input : pmaCLRMultiArray : * boost::multi_array <CGrayScale, 3>, vuiFRGConer et vuiFRGDimension : vector <unsigned int> | puiMinMax : pair<unsigned int, unsigned int>		*****
+***** Precondition : Nothing																																						*****
+***** Output : None																																									*****
+***** Effects : Initialize variables with the provided parameter																													*****
+****************************************************************************************************************************************************************************************/
 inline CFragment::CFragment(boost::multi_array <CGrayScale, 3> * pmaCLRMultiArray, vector <unsigned int> vuiConer, vector <unsigned int> vuiDimension, unsigned int uiConnexite, std::pair<unsigned int, unsigned int> puiMinMax) {
 
-	//Initialisation des variables
+	//Variables Initialization
 	pmaGSLFRGMultiArray = pmaCLRMultiArray;
 
-	//Vérification si les coordonnées et les dimensions sont situé dans le MultiArray
+	//Verification if coos + dimensions are within the dimensions of the MultiArray
 	if (vuiConer[0] + vuiDimension[0] > pmaCLRMultiArray->shape()[0] ||
 		vuiConer[1] + vuiDimension[1] > pmaCLRMultiArray->shape()[1] ||
 		vuiConer[2] + vuiDimension[2] > pmaCLRMultiArray->shape()[2]) {
@@ -123,19 +91,19 @@ inline CFragment::CFragment(boost::multi_array <CGrayScale, 3> * pmaCLRMultiArra
 }
 
 /************************************************************************************************************************************************
-***** OPERATOR= : Surcharge de l'opérateur= de la classe CFragment																			*****
+***** Operator=																																*****
 *************************************************************************************************************************************************
-***** Entrée : FRGFragment : const & CFragment																								*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : L'objet lui-même			                                                                                                    *****
-***** Entraine : Initialise les variables respectivement à celles de FRGFragment															*****
+***** Input : FRGFragment : const & CFragment																								*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : the object itself																											*****
+***** Effects : Initialize variables respectively with FRGFragment's variables 					                                            *****
 ************************************************************************************************************************************************/
 inline CFragment& CFragment::operator= (CFragment const& FRGFragment) {
 
-	//Initialisation des variables
-	pmaGSLFRGMultiArray = FRGFragment.pmaGSLFRGMultiArray; //Pointeur sur le même bjet pour éviter de la redondance en mémoire
+	//Variables Initialization
+	pmaGSLFRGMultiArray = FRGFragment.pmaGSLFRGMultiArray; //Pointer on the same object
 
-	//Vérification si les coordonnées et les dimensions sont situé dans le MultiArray
+	//Verification if coos + dimensions are within the dimensions of the MultiArray
 	if (FRGFragment.vuiFRGConer[0] + FRGFragment.vuiFRGDimension[0] > FRGFragment.pmaGSLFRGMultiArray->shape()[0] ||
 		FRGFragment.vuiFRGConer[1] + FRGFragment.vuiFRGDimension[1] > FRGFragment.pmaGSLFRGMultiArray->shape()[1] ||
 		FRGFragment.vuiFRGConer[2] + FRGFragment.vuiFRGDimension[2] > FRGFragment.pmaGSLFRGMultiArray->shape()[2]) {
@@ -151,23 +119,24 @@ inline CFragment& CFragment::operator= (CFragment const& FRGFragment) {
 	puiFRGMinMax = FRGFragment.puiFRGMinMax;
 	uiFRGConnexite = FRGFragment.uiFRGConnexite;
 
+	//Return Itself
 	return *this;
 }
 
 /************************************************************************************************************************************************
-***** CGROUPE : Constructeur par défaut de la classe CVoxel																					*****
+***** Class Copie Constructor																												*****
 *************************************************************************************************************************************************
-***** Entrée : GRPGroupe : const & CGroupe																								    *****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné                                                                                                       *****
-***** Entraine : Initialise les variables respectivement à celles de FRGFragment															*****
+***** Input : FRGFragment : const & CFragment																								*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize variables respectively with FRGFragment's variables 					                                            *****
 ************************************************************************************************************************************************/
 inline CFragment::CFragment(CFragment const& FRGFragment) {
 
-	//Initialisation des variables
-	pmaGSLFRGMultiArray = FRGFragment.pmaGSLFRGMultiArray; //Pointeur sur le même bjet pour éviter de la redondance en mémoire
+	//Variables Initialization
+	pmaGSLFRGMultiArray = FRGFragment.pmaGSLFRGMultiArray; //Pointer on the same object
 
-	//Vérification si les coordonnées et les dimensions sont situé dans le MultiArray
+	//Verification if coos + dimensions are within the dimensions of the MultiArray
 	if (FRGFragment.vuiFRGConer[0] + FRGFragment.vuiFRGDimension[0] > FRGFragment.pmaGSLFRGMultiArray->shape()[0] ||
 		FRGFragment.vuiFRGConer[1] + FRGFragment.vuiFRGDimension[1] > FRGFragment.pmaGSLFRGMultiArray->shape()[1] ||
 		FRGFragment.vuiFRGConer[2] + FRGFragment.vuiFRGDimension[2] > FRGFragment.pmaGSLFRGMultiArray->shape()[2]) {
@@ -180,29 +149,30 @@ inline CFragment::CFragment(CFragment const& FRGFragment) {
 	vuiFRGConer = FRGFragment.vuiFRGConer;
 	vuiFRGDimension = FRGFragment.vuiFRGDimension;
 
-	uiFRGConnexite = FRGFragment.uiFRGConnexite;
 	puiFRGMinMax = FRGFragment.puiFRGMinMax;
+	uiFRGConnexite = FRGFragment.uiFRGConnexite;
 }
 
 /************************************************************************************************************************************************
-***** FRGGETMATRICE : Accesseur en lecture de l'attribut pmaGSLFRGMultiArray																*****
+***** FRGGetMatrice : Reading Accessor																										*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : boost::multi_array<CGrayScale, 3> * : pmaGSLFRGMultiArray																	*****
-***** Entraine : Retourne le vector des dimensions de pmaGSLFRGMultiArray																	*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : pmaGSLFRGMultiArray : boost::multi_array<CGrayScale, 3> *																	*****
+***** Effects : Return variable pmaGSLFRGMultiArray 																						*****
 ************************************************************************************************************************************************/
 inline boost::multi_array<CGrayScale, 3> * CFragment::FRGGetMatrice() {
+
 	return pmaGSLFRGMultiArray;
 }
 
 /************************************************************************************************************************************************
-***** FRGGETDIMENSIONMATRICE : Accesseur en lecture de l'attribut pmaGSLFRGMultiArray														*****
+***** FRGGetDimensionMatrice : Reading Accessor																								*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : vuiDimensionMatrice : vector <unsigned int>																					*****
-***** Entraine : Retourne le vector des dimensions de pmaGSLFRGMultiArray																	*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : vuiDimMatrice : vector <unsigned int>																						*****
+***** Effects : Return the dimensions of the variable pmaGSLFRGMultiArray 																	*****
 ************************************************************************************************************************************************/
 inline vector <unsigned int> CFragment::FRGGetDimensionMatrice() {
 
@@ -210,16 +180,16 @@ inline vector <unsigned int> CFragment::FRGGetDimensionMatrice() {
 }
 
 /************************************************************************************************************************************************
-***** FRGGETELEMENT : Accesseur en lecture de l'attribut pmaGSLFRGMultiArray																*****
+***** FRGGetElement : Reading Accessor																										*****
 *************************************************************************************************************************************************
-***** Entrée : uiX, uiY, uiZ : unsigned int																									*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : CGrayScale : CLRElement																										*****
-***** Entraine : Retourne l'élément CGrayScale pour des coordonnées données																	*****
+***** Input : uiX, uiY, uiZ : unsigned int																									*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : uiElement : unsigned int																										*****
+***** Effects : Return an element of the variable pmaGSLFRGMultiArray 																		*****
 ************************************************************************************************************************************************/
 inline CGrayScale CFragment::FRGGetElement(unsigned int uiX, unsigned int uiY, unsigned int uiZ) {
 
-	//Vérification si les coordonnées sont situé dans le MultiArray
+	//Verification if coos are within the dimensions of the MultiArray
 	if (uiX > pmaGSLFRGMultiArray->shape()[0] ||
 		uiY > pmaGSLFRGMultiArray->shape()[1] ||
 		uiZ > pmaGSLFRGMultiArray->shape()[2]) {
@@ -233,170 +203,182 @@ inline CGrayScale CFragment::FRGGetElement(unsigned int uiX, unsigned int uiY, u
 }
 
 /************************************************************************************************************************************************
-***** FRGGETCOOS : Accesseur en lecture de l'attribut vuiFRGConer																			*****
+***** FRGGetCoos : Reading Accessor																											*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : vuiFRGConer : vector <unsigned int>																							*****
-***** Entraine : Retourne les coordonées du coin du Multi Array																				*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : vuiFRGConer : vector <unsigned int>																							*****
+***** Effects : Return variable vuiFRGConer																									*****
 ************************************************************************************************************************************************/
 inline vector <unsigned int> CFragment::FRGGetCoos() {
+
 	return vuiFRGConer;
 }
 
 /************************************************************************************************************************************************
-***** FRGGETDIMENSIONS : Accesseur en lecture de l'attribut vuiFRGDimension																	*****
+***** FRGGetDimensions : Reading Accessor																									*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : vuiFRGDimension : vector <unsigned int>																						*****
-***** Entraine : Retourne les dimensions du Multi Array																						*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : vuiFRGDimension : vector <unsigned int>																						*****
+***** Effects : Return variable vuiFRGDimension																								*****
 ************************************************************************************************************************************************/
 inline vector <unsigned int> CFragment::FRGGetDimensions() {
+
 	return vuiFRGDimension;
 }
 
 /************************************************************************************************************************************************
-***** FRGGETMINMAX : Accesseur en lecture de l'attribut puiFRGMinMax																		*****
+***** FRGGetMinMax : Reading Accessor																										*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : puiFRGMinMax : pair<unsigned int, unsigned int>																				*****
-***** Entraine : Retourne les valeurs du couple Min / Max																					*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : puiFRGMinMax : std::pair<unsigned int, unsigned int>																			*****
+***** Effects : Return variable puiFRGMinMax																								*****
 ************************************************************************************************************************************************/
 inline std::pair<unsigned int, unsigned int> CFragment::FRGGetMinMax() {
+
 	return puiFRGMinMax;
 }
 
 /************************************************************************************************************************************************
-***** FRGGETMAX : Accesseur en lecture de l'attribut puiFRGMinMax																			*****
+***** FRGGetMax : Reading Accessor																											*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : puiFRGMinMax.second : unsigned int																							*****
-***** Entraine : Retourne la valeur Max du couple Min / Max																					*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : uiMax : unsigned int																											*****
+***** Effects : Return variable puiFRGMinMax's second element 																				*****
 ************************************************************************************************************************************************/
 inline unsigned int CFragment::FRGGetMax() {
+
 	return puiFRGMinMax.second;
 }
 
 /************************************************************************************************************************************************
-***** FRGGETMIN : Accesseur en lecture de l'attribut puiFRGMinMax																			*****
+***** FRGGetMin : Reading Accessor																											*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : puiFRGMinMax.first : unsigned int																							*****
-***** Entraine : Retourne la valeur Min du couple Min / Max																					*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : uiMin : unsigned int																											*****
+***** Effects : Return variable puiFRGMinMax's first element 																				*****
 ************************************************************************************************************************************************/
 inline unsigned int CFragment::FRGGetMin() {
+
 	return puiFRGMinMax.first;
 }
 
 /************************************************************************************************************************************************
-***** FRGSETMINMAX : Accesseur en écriture de l'attribut puiFRGMinMax																		*****
+***** FRGSetMinMax : Writting Accessor																										*****
 *************************************************************************************************************************************************
-***** Entrée : puiMinMax : pair<unsigned int, unsigned int>																					*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Modifie la valeur du couple Min / Max																						*****
+***** Input : puiMinMax : std::pair<unsigned int, unsigned int>																				*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Modification of the variable puiFRGMinMax 																					*****
 ************************************************************************************************************************************************/
 inline void CFragment::FRGSetMinMax(std::pair<unsigned int, unsigned int> puiMinMax) {
+
 	puiFRGMinMax = puiMinMax;
 }
 
 /************************************************************************************************************************************************
-***** FRGSETMINMAX : Accesseur en écriture de l'attribut puiFRGMinMax																		*****
+***** FRGSetMinMax : Writting Accessor																										*****
 *************************************************************************************************************************************************
-***** Entrée : uiMin : unsigned int | uiMax : unsigned int																					*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Modifie la valeur du couple Min / Max																						*****
+***** Input : uiMin, uiMax : unsigned int																									*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Modification of the variable puiFRGMinMax 																					*****
 ************************************************************************************************************************************************/
 inline void CFragment::FRGSetMinMax(unsigned int uiMin, unsigned int uiMax) {
+
+	//Creation of the pair
 	puiFRGMinMax = std::pair<unsigned int, unsigned int>(uiMin, uiMax);
 }
 
 /************************************************************************************************************************************************
-***** FRGSETMIN : Accesseur en écriture de l'attribut puiFRGMinMax																			*****
+***** FRGSetMin : Writting Accessor																											*****
 *************************************************************************************************************************************************
-***** Entrée : uiMin : unsigned int																											*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Modifie la valeur Min du couple Min / Max																					*****
+***** Input : uiMin : unsigned int																											*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Modification of the puiFRGMinMax's first element																			*****
 ************************************************************************************************************************************************/
 inline void CFragment::FRGSetMin(unsigned int uiMin) {
+
 	puiFRGMinMax.first = uiMin;
 }
 
 /************************************************************************************************************************************************
-***** FRGSETMAX : Accesseur en écriture de l'attribut puiFRGMinMax																			*****
+***** FRGSetMax : Writting Accessor																											*****
 *************************************************************************************************************************************************
-***** Entrée : uiMax : unsigned int																											*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Modifie la valeur Max du couple Min / Max																					*****
+***** Input : uiMax : unsigned int																											*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Modification of the puiFRGMinMax's second element 																			*****
 ************************************************************************************************************************************************/
 inline void CFragment::FRGSetMax(unsigned int uiMax) {
+
 	puiFRGMinMax.second = uiMax;
 }
 
 /************************************************************************************************************************************************
-***** FRGGETCONNEXITE : Accesseur en lecture de uiFRGConnexite																				*****
+***** FRGGetConnexite : Reading Accessor																									*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien																											*****
-***** Sortie : uiFRGConnexite : unsigned int																								*****
-***** Entraine : Retourne la valeur de la variable uiFRGConnexite																			*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : uiFRGConnexite : unsigned int																								*****
+***** Effects : Return variable uiFRGConnexite					 																			*****
 ************************************************************************************************************************************************/
 inline unsigned int CFragment::FRGGetConnexite() {
+
 	return uiFRGConnexite;
 }
 
 /************************************************************************************************************************************************
-***** FRGSETCONNEXITE : Accesseur en écriture de uiFRGConnexite																				*****
+***** FRGGetConnexite : Reading Accessor																									*****
 *************************************************************************************************************************************************
-***** Entrée : uiNewConnexite : unsigned int																								*****
-***** Nécessite : Ne nécessite rien																											*****
-***** Sortie : Aucun élement retourné																										*****
-***** Entraine : Modifie la valeur de la variable uiFRGConnexite																			*****
+***** Input : uiNewConnexite : unsigned int																									*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Modification of the variable uiFRGConnexite					 																*****
 ************************************************************************************************************************************************/
 inline void CFragment::FRGSetConnexite(unsigned int uiNewConnexite) {
+
 	uiFRGConnexite = uiNewConnexite;
 }
 
 /************************************************************************************************************************************************
-***** FRGHOMOGENEITY : Méthode de vérification de l'homogénéité de pmaGSLFRGMultiArray														*****
+***** FRGHomogeneity : Method for analyze homogeneity																						*****
 *************************************************************************************************************************************************
-***** Entrée : uiDifference : const unsigned int																							*****
-***** Nécessite : Ne nécessite rien																											*****
-***** Sortie : boolean																														*****
-***** Entraine : Retourne True/False comme réponse d'homogénéité du Multi-Array																*****
+***** Input : uiHomogeneite : const unsigned int																							*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : bHomogeneity : boolean																										*****
+***** Effects : Return True/False if the Fragment are uniform or not					 													*****
 ************************************************************************************************************************************************/
 inline bool CFragment::FRGHomogeneity(const unsigned int uiHomogeneite) {
 
-	//set du min et du max
+	//Min and Max Set
 	CGrayScale GSLMini = (*pmaGSLFRGMultiArray)[vuiFRGConer[0]][vuiFRGConer[1]][vuiFRGConer[2]];
 	CGrayScale GSLMax = GSLMini;
 
-	//Pour chaque Voxel du Fragment, détermine le min et le max
+	//For each Voxel, analyze Min / Max
 	for (unsigned int uiBoucle = 0; uiBoucle < vuiFRGDimension[0]; uiBoucle++) {
 		for (unsigned int uiBoucle2 = 0; uiBoucle2 < vuiFRGDimension[1]; uiBoucle2++) {
 			for (unsigned int uiBoucle3 = 0; uiBoucle3 < vuiFRGDimension[2]; uiBoucle3++) {
 
-				//Sauvegarde 
+				//Save 
 				CGrayScale GSLRef = (*pmaGSLFRGMultiArray)[vuiFRGConer[0] + uiBoucle][vuiFRGConer[1] + uiBoucle2][vuiFRGConer[2] + uiBoucle3];
 
-				//Compare le max
+				//Max Comparaison
 				if (GSLMax.GSLGetGray() < GSLRef.GSLGetGray()) {
 					GSLMax = GSLRef;
 				}
 
-				//Compare le Min
+				//Min Comparaison
 				else if (GSLMini.GSLGetGray() > GSLRef.GSLGetGray()) {
 					GSLMini = GSLRef;
 				}
 
-				//Vérifie si la différence entre le min et le max est supérieur à l'homogénéité => non homogène
+				//Verification if the difference between Min / Max are superior the uiHomogeneite (Not Homogene) or not (Homogene)
 				if (GSLMax.GSLGetGray() - GSLMini.GSLGetGray() > uiHomogeneite) {
 					return false;
 				}
@@ -404,45 +386,45 @@ inline bool CFragment::FRGHomogeneity(const unsigned int uiHomogeneite) {
 		}
 	}
 
-	//Sinon => Fragment Homogène
+	//Else => Homogene Fragment
 	return true;
 }
 
 /************************************************************************************************************************************************
-***** FRGHOMOGENEITYV2 : Méthode de vérification de l'homogénéité de pmaGSLFRGMultiArray													*****
+***** FRGHomogeneityV2 : Method for analyze homogeneity																						*****
 *************************************************************************************************************************************************
-***** Entrée : uiHomogeneite : const unsigned int																							*****
-***** Nécessite : Ne nécessite rien					                                                                                        *****
-***** Sortie : puiMinMax : pair <unsigned int, unsigned int>																				*****
-***** Entraine : Retourne le Min / Max comme réponse d'homogénéité du Multi-Array, nullptr si pas homogène									*****
+***** Input : uiHomogeneite : const unsigned int																							*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : puiMinMax : std::pair<unsigned int, unsigned int> *																			*****
+***** Effects : Return Min/Max if the Fragment are uniform, nullptr else				 													*****
 ************************************************************************************************************************************************/
 inline std::pair<unsigned int, unsigned int> * CFragment::FRGHomogeneityV2(const unsigned int uiHomogeneite) {
 
-	//set du min et du max
+	//Min and Max Set
 	CGrayScale GSLMini = (*pmaGSLFRGMultiArray)[vuiFRGConer[0]][vuiFRGConer[1]][vuiFRGConer[2]];
 	CGrayScale GSLMax = GSLMini;
 
-	//Pour chaque Voxel du Fragment, détermine le min et le max
+	//For each Voxel, analyze Min / Max
 	for (unsigned int uiBoucle = 0; uiBoucle < vuiFRGDimension[0]; uiBoucle++) {
 		for (unsigned int uiBoucle2 = 0; uiBoucle2 < vuiFRGDimension[1]; uiBoucle2++) {
 			for (unsigned int uiBoucle3 = 0; uiBoucle3 < vuiFRGDimension[2]; uiBoucle3++) {
 
 				CGrayScale GSLRef = (*pmaGSLFRGMultiArray)[vuiFRGConer[0] + uiBoucle][vuiFRGConer[1] + uiBoucle2][vuiFRGConer[2] + uiBoucle3];
 
-				//Compare le Max
+				//Max Comparaison
 				if (GSLMax.GSLGetGray() < GSLRef.GSLGetGray()) {
 					GSLMax = GSLRef;
 
-					//Vérifie si la différence entre le min et le max est supérieur à l'homogénéité => non homogène
+					//Verification if the difference between Min / Max are superior the uiHomogeneite (Not uniform) or not (uniform)
 					if (GSLMax.GSLGetGray() - GSLMini.GSLGetGray() > uiHomogeneite) {
 						return nullptr;
 					}
 				}
-				//Compare le Min
+				//Min Comparaison
 				else if (GSLMini.GSLGetGray() > GSLRef.GSLGetGray()) {
 					GSLMini = GSLRef;
 
-					//Vérifie si la différence entre le min et le max est supérieur à l'homogénéité => non homogène
+					//Verification if the difference between Min / Max are superior the uiHomogeneite (Not uniform) or not (uniform)
 					if (GSLMax.GSLGetGray() - GSLMini.GSLGetGray() > uiHomogeneite) {
 						return nullptr;
 					}
@@ -451,79 +433,58 @@ inline std::pair<unsigned int, unsigned int> * CFragment::FRGHomogeneityV2(const
 		}
 	}
 
-	//Return la pair Min/Max
+	//Else => uniform Fragment and return the pair of Min / Max
 	return new std::pair<unsigned int, unsigned int>(GSLMini.GSLGetGray(), GSLMax.GSLGetGray());
 }
 
 /************************************************************************************************************************************************
-***** FRGFINDMINMAX : Méthode retournant le Min/Max																							*****
+***** FRGFindMinMax : Method for return Min/Max																								*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : std::pair <unsigned int, unsigned int> : puiMinMax																			*****
-***** Entraine : Retourne une pair de Min / Max du CFragment																				*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : puiMinMax : std::pair <unsigned int, unsigned int>																			*****
+***** Effects : Return the Min/Max of the Fragment										 													*****
 ************************************************************************************************************************************************/
-inline std::pair<unsigned int, unsigned int> CFragment::FRGFindMinMax() {	//même algo que HomogeneityV2 mais pas de critere d'homogeinite, calcul min,max du fragment
+inline std::pair<unsigned int, unsigned int> CFragment::FRGFindMinMax() {
 
+	//Min and Max Set
 	CGrayScale GSLMin = (*pmaGSLFRGMultiArray)[vuiFRGConer[0]][vuiFRGConer[1]][vuiFRGConer[2]];
 	CGrayScale GSLMax = GSLMin;
 
-	//Pour chaque Voxel du Fragment, détermine le min et le max
+	//For each Voxel, analyze Min / Max
 	for (unsigned int uiBoucle = 0; uiBoucle < vuiFRGDimension[0]; uiBoucle++) {
 		for (unsigned int uiBoucle2 = 0; uiBoucle2 < vuiFRGDimension[1]; uiBoucle2++) {
 			for (unsigned int uiBoucle3 = 0; uiBoucle3 < vuiFRGDimension[2]; uiBoucle3++) {
 
 				CGrayScale GSLCurrent = (*pmaGSLFRGMultiArray)[vuiFRGConer[0] + uiBoucle][vuiFRGConer[1] + uiBoucle2][vuiFRGConer[2] + uiBoucle3];
 
-				//Compare le Max
+				//Max Comparaison
 				if (GSLMax.GSLGetGray() < GSLCurrent.GSLGetGray()) {
 					GSLMax = GSLCurrent;
 				}
-				//Compare le Min
+				//Min Comparaison
 				else if (GSLMin.GSLGetGray() > GSLCurrent.GSLGetGray()) {
 					GSLMin = GSLCurrent;
 				}
 			}
 		}
 	}
-	//Return la pair Min/Max
+
+	//Return Min / Max Pair
 	return std::pair<unsigned int, unsigned int>(GSLMin.GSLGetGray(), GSLMax.GSLGetGray());
 }
 
 /************************************************************************************************************************************************
-***** FRGDOMINANTCOLOR : Méthode retournant la couleur dominante de pmaGSLFRGMultiArray														*****
+***** FRGIsSplitable : Method for return Direction Possibility of Split																		*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : GSLDominantGray : CGrayScale																									*****
-***** Entraine : Retourne la couleur dominante du Multi-Array																				*****
-************************************************************************************************************************************************/
-inline CGrayScale CFragment::FRGDominantColor() {
-
-	unsigned int uiMoyenneGray = 0;
-
-	for (unsigned int uiBoucle = 0; uiBoucle < vuiFRGDimension[0]; uiBoucle++) {
-		for (unsigned int uiBoucle2 = 0; uiBoucle2 < vuiFRGDimension[1]; uiBoucle2++) {
-			for (unsigned int uiBoucle3 = 0; uiBoucle3 < vuiFRGDimension[2]; uiBoucle3++) {
-				uiMoyenneGray += (*pmaGSLFRGMultiArray)[vuiFRGConer[0] + uiBoucle][vuiFRGConer[1] + uiBoucle2][vuiFRGConer[2] + uiBoucle3].GSLGetGray();
-			}
-		}
-	}
-
-	return CGrayScale (static_cast<unsigned int> (round (uiMoyenneGray / (vuiFRGDimension[0]*vuiFRGDimension[1]*vuiFRGDimension[2]))));
-}
-
-/************************************************************************************************************************************************
-***** FRGISSPLITABLE : Méthode retournant le Min/Max																						*****
-*************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : std::vector<bool> : vbDimSplitable																							*****
-***** Entraine : Retourne une pair de Min / Max du CFragment																				*****
+***** Input : uiSeuilMin : const unsigned int																								*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : vbDimSplitable : std::vector<bool>																							*****
+***** Effects : Return boolean for each direction (true if is splitable, false else)										 				*****
 ************************************************************************************************************************************************/
 inline std::vector<bool> CFragment::FRGIsSplitable(const unsigned int uiSeuilMin) {
 
-	//Gestion de l'exception : Taille minimum = 0
+	//Exception Management if uiSeuilMin = 0
 	if (uiSeuilMin == 0) {
 		CException EXCErreur;
 		EXCErreur.EXCModifierValeur(SEUIL_MIN);
@@ -533,26 +494,28 @@ inline std::vector<bool> CFragment::FRGIsSplitable(const unsigned int uiSeuilMin
 	return { vuiFRGDimension[0] >= (uiSeuilMin * 2), vuiFRGDimension[1] >= (uiSeuilMin * 2), vuiFRGDimension[2] >= (uiSeuilMin * 2) };
 }
 
-/************************************************************************************************************************************************
-***** FRGGETNEWSPOTS : Méthode retournant les nouveaux Fragments																			*****
-*************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : std::vector<bool> : vbDimSplitable																							*****
-***** Entraine : Retourne une pair de Min / Max du CFragment																				*****
-************************************************************************************************************************************************/
+/************************************************************************************************************************************************************
+***** FRGGetNewSpots : Method for return New Fragment (Coos and Dimensions)																				*****
+*************************************************************************************************************************************************************
+***** Input : vbSplitDim : const std::vector<bool> | vpvuiNewSpots : std::vector< std::pair< std::vector<unsigned int>, std::vector<unsigned int>>> &	*****
+***** Precondition : Nothing																															*****
+***** Output : None																																		*****
+***** Effects : Return boolean for each direction (true if is splitable, false else)										 							*****
+************************************************************************************************************************************************************/
 inline void CFragment::FRGGetNewSpots(const std::vector<bool> vbSplitDim, std::vector< std::pair< std::vector<unsigned int>, std::vector<unsigned int>>> & vpvuiNewSpots) {
 
-	std::vector<unsigned int> vuiHalfDims; //conteneur des demi dimensions
+	std::vector<unsigned int> vuiHalfDims; //Half Dimension vector
 
-	//Pour chaque dimension
-	for (unsigned int cLoop = 0; cLoop < 3; ++cLoop) {      
-		//calcule de la demi-dimension, seulement si celle-ci est "Splitable"
+	//For each dimension
+	for (unsigned int cLoop = 0; cLoop < 3; ++cLoop) { 
+
+		//Calcul of half-dimension if this one is splitable
 		vuiHalfDims.push_back(vbSplitDim[cLoop] ? (vuiFRGDimension[cLoop] >> 1) + (vuiFRGDimension[cLoop] & 1) : vuiFRGDimension[cLoop]);
 	}
 
 	int i = 0;
-	//Triple boucle permet de lire tous les cas possibles
+	
+	//Triple loop for analyze each case possible
 	for (unsigned int cLoop1 = 0; cLoop1 <= static_cast <unsigned int>(vbSplitDim[0]); ++cLoop1) {
 		for (unsigned int cLoop2 = 0; cLoop2 <= static_cast <unsigned int>(vbSplitDim[1]); ++cLoop2) {
 			for (unsigned int cLoop3 = 0; cLoop3 <= static_cast <unsigned int>(vbSplitDim[2]); ++cLoop3) {
@@ -561,7 +524,7 @@ inline void CFragment::FRGGetNewSpots(const std::vector<bool> vbSplitDim, std::v
 														cLoop2 == 0 ? vuiHalfDims[1] : vuiFRGDimension[1] - vuiHalfDims[1],
 														cLoop3 == 0 ? vuiHalfDims[2] : vuiFRGDimension[2] - vuiHalfDims[2] };
 
-				//Ajoute la nouvelle pair à la liste des nouveaux futurs splits
+				//Add new Pair to futur fragment
 				vpvuiNewSpots.push_back(std::pair< std::vector<unsigned int>, std::vector<unsigned int> >(vuiSpotCoos, vuiSpotDims));
 			}
 		}

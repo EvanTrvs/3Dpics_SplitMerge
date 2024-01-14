@@ -18,19 +18,43 @@ class CMultiArrayOperation {
 
 public: 
 	/************************************************************************************************************************************************
-	***** MAOSPLITS : Méthode d'appel des méthodes de Splits																					*****
+	***** MAOSplits : Method for call each version of split																						*****
 	*************************************************************************************************************************************************
-	***** Entrée : maData : boost::multi_array<CGrayScale, 3> & | uiHomogeneite, uiMinSize, uiVersion : unsigned int							*****
-	***** Nécessite : La taille minimum des cubes ne peux être égale à 0                                                                        *****
-	***** Sortie : vFRGLeafs : vector <CFragment>																								*****
-	***** Entraine : Appel les méthodes de Split en gérant les cas d'exception																	*****
+	***** Input : maData : boost::multi_array<CGrayScale, 3> & | uiHomogeneite, uiMinSize, uiVersion : const unsigned int						*****
+	***** Precondition : Minimum cube size cannot be equal to 0                                                                                 *****
+	***** Output : vFRGLeafs : vector <CFragment>																								*****
+	***** Effects : Call version of split managing exceptional cases																			*****
 	************************************************************************************************************************************************/
 	vector<CFragment> MAOSplits(boost::multi_array<CGrayScale, 3> & maData, unsigned int uiHomogeneite, unsigned int uiMinSize, unsigned int uiVersion);
 
+	/************************************************************************************************************************************************
+	***** MAOsetMireData : Method for create Mire																								*****
+	*************************************************************************************************************************************************
+	***** Input : MultiArrayMire : boost::multi_array<CGrayScale, 3> & | uiDimZ : const unsigned int							 				*****
+	***** Precondition : Nothing								                                                                                *****
+	***** Output : None																															*****
+	***** Effects : Initialize multi_array if the mire.nii is called																			*****
+	************************************************************************************************************************************************/
 	void MAOsetMireData(unsigned int uiDimZ, boost::multi_array<CGrayScale, 3>& MultiArrayMire);
 
+	/************************************************************************************************************************************************
+	***** MAOcreateFromNifti : Method for multi_array from nifti image																			*****
+	*************************************************************************************************************************************************
+	***** Input : MultiArrayMire : boost::multi_array<CGrayScale, 3> & | NFDparam : const CNiftiImageData<uint16_t> &							*****
+	***** Precondition : Nothing								                                                                                *****
+	***** Output : None																															*****
+	***** Effects : Initialize multi_array from nifti image																						*****
+	************************************************************************************************************************************************/
 	void MAOcreateFromNifti(boost::multi_array<CGrayScale, 3>& MultiArrayParam, const CNiftiImageData<uint16_t> & NFDparam);
 
+	/************************************************************************************************************************************************
+	***** Operator<<																															*****
+	*************************************************************************************************************************************************
+	***** Input : os : std::ostream & | MultiArrayParam	: const boost::multi_array<CGrayScale, 3> &												*****
+	***** Precondition : Nothing								                                                                                *****
+	***** Output : std::ostream &																												*****
+	***** Effects : OverLoad for print the multi_array																							*****
+	************************************************************************************************************************************************/
 	friend std::ostream& operator<<(std::ostream& os, const boost::multi_array<CGrayScale, 3> & MultiArrayParam);
 };
 

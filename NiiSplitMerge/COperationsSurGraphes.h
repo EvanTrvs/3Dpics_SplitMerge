@@ -11,7 +11,6 @@
 #include <boost/graph/connected_components.hpp>
 
 #include "CFragment.h"
-#include "CVoxel.h"
 
 #define GRAPHE_VIDE 3
 
@@ -21,12 +20,12 @@ class COperationsSurGraphes {
 public:
 
 	/************************************************************************************************************************************************
-	***** OSGGRAPHETOMATRICE : Méthode transformant un graphe de fragment en matrice															*****
+	***** OSGGrapheToMatrice : Function convert graphe to multi_array																			*****
 	*************************************************************************************************************************************************
-	***** Entrée : alGraphe : BGLGrapheAffichage																								*****
-	***** Nécessite : Ne nécessite rien                                                                                                         *****
-	***** Sortie : maMatriceGroupe : boost::multi_array <unsigned int, 3>													                    *****
-	***** Entraine : Transforme un graphe en matrice avec comme élément les groupes de chaque voxels											*****
+	***** Input : alGraphe : BGLGrapheAffichage																									*****
+	***** Precondition : Nothing                                                                                                                *****
+	***** Output : maMatriceGroupe : boost::multi_array <unsigned int, 3>																		*****
+	***** Effects : Convert graphe to multi_array with connexity for each elements			                                                    *****
 	************************************************************************************************************************************************/
 	boost::multi_array <unsigned int, 3> OSGGrapheToMatrice(BGLGrapheAffichage alGraphe);
 };

@@ -3,122 +3,117 @@
 #include "CGrayScale.h"
 
 /************************************************************************************************************************************************
-***** CGRAYSCALE : Constructeur par défaut de la classe CGrayScale																			*****
+***** Default Class Constructor																												*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Initialise uiGSLGray à 0																									*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize uiGSLGray to 0 and uiGSLConnexite to -1                                                                          *****
 ************************************************************************************************************************************************/
 inline CGrayScale::CGrayScale() {
 
-	//Initialisation de la variable uiGSLGray
+	// Initialize the variable uiGSLGray
 	uiGSLGray = 0;
 	uiGSLConnexite = -1;
 }
 
 /************************************************************************************************************************************************
-***** CGRAYSCALE : Constructeur de confort de la classe CGrayScale																			*****
+***** Class Constructor																														*****
 *************************************************************************************************************************************************
-***** Entrée : uiGray : unsigned int																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Initialise uiGSLGray avec le paramètre passé																				*****
+***** Input : uiGray : unsigned int																											*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize uiGSLGray with the provided parameter and uiGSLConnexite to -1                                                   *****
 ************************************************************************************************************************************************/
 inline CGrayScale::CGrayScale(unsigned int uiGray) {
-	//Initialisation de la variable uiGSLGray
+
+	//Variables Initialization
 	uiGSLGray = uiGray;
 	uiGSLConnexite = -1;
 }
 
+/************************************************************************************************************************************************
+***** Class Constructor																														*****
+*************************************************************************************************************************************************
+***** Input : uiGray, uiConnexite : unsigned int																							*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize uiGSLGray and uiGSLConnexite with the provided parameter				 											*****
+************************************************************************************************************************************************/
 inline CGrayScale::CGrayScale(unsigned int uiGray, int uiConnexite) {
 
-	//Initialisation de la variable uiGSLGray
+	//Variables Initialization
 	uiGSLGray = uiGray;
 	uiGSLConnexite = uiConnexite;
 }
 
 /************************************************************************************************************************************************
-***** CGRAYSCALE : Constructeur de recopie de la classe CGrayScale																			*****
+***** Class Copie Constructor																												*****
 *************************************************************************************************************************************************
-***** Entrée : GSLGray : const & CGrayScale																									*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Initialise uiGSLGray à l'objet passé en paramètre																			*****
+***** Input : GSLGray : const & CGrayScale																									*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize uiGSLGray and uiGSLConnexite with the parameter object															*****
 ************************************************************************************************************************************************/
 inline CGrayScale::CGrayScale(CGrayScale const& GSLGray) {
 
-	//Initialisation de la variable uiGSLGray
+	//Variables Initialization
 	uiGSLGray = GSLGray.uiGSLGray;
 	uiGSLConnexite = GSLGray.uiGSLConnexite;
 }
 
 /************************************************************************************************************************************************
-***** GSLGETGRAY : Accesseur en lecture de l'attribut uiGray																				*****
+***** GSLGetGray : Reading Accessors																										*****
 *************************************************************************************************************************************************
-***** Entrée : Aucun Paramètre d'entrée																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie :uiGSLGray	: unsigned int																										*****
-***** Entraine : Retourne la variable uiGSLGray																								*****
+***** Input : None																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : uiGSLGray : unsigned int																										*****
+***** Effects : Return Variable uiGSLGray																									*****
 ************************************************************************************************************************************************/
 inline unsigned int CGrayScale::GSLGetGray() const {
 
-	//Return de la variable uiGSLGray
+	//Return Variable uiGSLGray
 	return uiGSLGray;
 }
 
 /************************************************************************************************************************************************
-***** GSLSETGRAY : Accesseur en écriture de l'attribut uiGray																				*****
+***** GSLSetGray : Writting Accessors																										*****
 *************************************************************************************************************************************************
-***** Entrée : uiGSLGray : unsigned int																										*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : Aucun élément retourné																										*****
-***** Entraine : Modifie la variable uiGSLGray																								*****
+***** Input : uiGray : unsigned int 																										*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Modification of variable uiGSLGray																							*****
 ************************************************************************************************************************************************/
 inline void CGrayScale::GSLSetGray(unsigned int uiGray) {
 
-	//Modification de la variable uiGSLGray
+	//Modification of variable uiGSLGray
 	uiGSLGray = uiGray;
 }
 
-inline int CGrayScale::GSLGetConnexite() {
+/************************************************************************************************************************************************
+***** GSLGetConexite : Reading Accessors																									*****
+*************************************************************************************************************************************************
+***** Input : None 																															*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : uiGSLConnexite : unsigned int																								*****
+***** Effects : Return variable uiGSLConnexite																								*****
+************************************************************************************************************************************************/
+inline int CGrayScale::GSLGetConnexite() const {
+
+	//Return Variable uiGSLConnexite
 	return uiGSLConnexite;
 }
 
+/************************************************************************************************************************************************
+***** GSLSetConnexite : Wrtting Accessors																									*****
+*************************************************************************************************************************************************
+***** Input : uiNewConnexite : int 																											*****
+***** Precondition : Nothing                                                                                                                *****
+***** Output : None																															*****
+***** Effects : Modification of variable uiGSLConnexite																						*****
+************************************************************************************************************************************************/
 inline void CGrayScale::GSLSetConnexite(int uiNewConnexite) {
+
+	//Modification of variable uiGSLConnexite
 	uiGSLConnexite = uiNewConnexite;
-}
-
-/************************************************************************************************************************************************
-***** GSLUPPERLIMIT : Méthode retournant la valeur max de GrayScale (de 0 à 255)															*****
-*************************************************************************************************************************************************
-***** Entrée : uiDifference : unsigned int																									*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : uiGray : unsigned int																										*****
-***** Entraine : Retourne la valeur de la différence entre le critère d'homogénéité et la valeur du Gray									*****
-************************************************************************************************************************************************/
-inline unsigned int CGrayScale::GSLUpperLimit(unsigned int uiDifference) {
-
-	//Si la variable uiGSLGray est inférieur à la différence entre le maximum possible et le critère d'homogénéité
-	if (uiGSLGray < 255 - uiDifference)
-		return uiGSLGray + uiDifference;
-	else //Sinon return le maximum possible (255)
-		return 255;
-}
-
-/************************************************************************************************************************************************
-***** GSLLOWERLIMIT : Méthode retournant la valeur min de GrayScale (de 0 à 255)															*****
-*************************************************************************************************************************************************
-***** Entrée : uiDifference : unsigned int																									*****
-***** Nécessite : Ne nécessite rien                                                                                                         *****
-***** Sortie : uiGray : unsigned int																										*****
-***** Entraine : Retourne la valeur de la différence entre le critère d'homogénéité et la valeur du Gray									*****
-************************************************************************************************************************************************/
-inline unsigned int CGrayScale::GSLLowerLimit(unsigned int uiDifference) {
-
-	//Si la variable uiGSLGray est supérieur à la différence entre le minimum possible et le critère d'homogénéité
-	if (uiGSLGray > uiDifference)
-		return uiGSLGray - uiDifference;
-	else //Sinon return le minimum (0)
-		return 0;
 }

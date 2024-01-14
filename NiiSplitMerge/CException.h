@@ -39,7 +39,7 @@ class CException {
 		/**********************************************************************************************
 		 ***** Class constructor                                                                  *****
 		 **********************************************************************************************
-		 ***** Input : unsigned int ,char * message                                               *****
+		 ***** Input : unsigned int, char * message                                               *****
 		 ***** Precondition: None                                                                 *****
 		 ***** Output:  None                                                                      *****
 		 ***** Postcondition : Create an CException Object with inputed value                     *****
@@ -56,36 +56,37 @@ class CException {
 		 **********************************************************************************************/
 		CException(const CException & EXCparam);
 	
-		/************************************************************************
-		 *****Destructor | ~CException()                                     *****
-		 *****Input : None                                                   *****
-		 *****Precondition : None                                            *****
-		 *****Output : None                                                  *****
-		 *****Postconditions : Attribut of this are deleted                  *****
-		 ************************************************************************/
+		/**************************************************************************
+		 ***** Destructor | ~CException()                                     *****
+		 **************************************************************************
+		 ***** Input : None                                                   *****
+		 ***** Precondition : None                                            *****
+		 ***** Output : None                                                  *****
+		 ***** Postconditions : Attribut of this are deleted                  *****
+		 *************************************************************************/
 		~CException();
 	
 	//Methods
 	public :
 
-		/************************************************************************
-		***** EXCsetValue()                                                  *****
-		*****Input :  int ivalue                                            *****
-		*****Precondition : ivalue is in the range of error set by the class*****
-		*****                                                               *****
-		*****Output : void                                                  *****
-		*****Postconditions : change the value of this                      *****
-		************************************************************************/
-		void EXCsetValue( int ivalue) { iEXCvalue = ivalue; };
+		/**************************************************************************
+		***** EXCsetValue()                                                   *****
+		***************************************************************************
+		***** Input :  int ivalue                                             *****
+		***** Precondition : ivalue is in the range of error set by the class *****
+		***** Output : void                                                   *****
+		***** Postconditions : change the value of this                       *****
+		**************************************************************************/
+		void EXCsetValue (int ivalue) { iEXCvalue = ivalue; };
 
-		/************************************************************************
-		***** EXCgetValue()                                                 *****
-		*************************************************************************
-		*****Input : None                                                   *****
-		*****Precondition : None                                            *****
-		*****Output : unsigned int                                          *****
-		*****Postconditions : None                                          *****
-		************************************************************************/
+		/*************************************************************************
+		***** EXCgetValue()                                                  *****
+		**************************************************************************
+		***** Input : None                                                   *****
+		***** Precondition : None                                            *****
+		***** Output : unsigned int                                          *****
+		***** Postconditions : None                                          *****
+		*************************************************************************/
 		unsigned int EXCgetValue() const { return iEXCvalue; };
 
 		/**********************************************************************************************
@@ -95,7 +96,7 @@ class CException {
 		 ***** Precondition: None                                                                 *****
 		 ***** Output:  None                                                                      *****
 		 ***** Postcondition : return copie CException										      *****
-		 **********************************************************************************************/
+		 *********************************************************************************************/
 		CException & operator=(const CException & EXCparam);
 
 		//méthod ou constructeur : concatene

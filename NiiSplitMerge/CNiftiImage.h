@@ -52,6 +52,8 @@ public:
 	
 	int NFIreadHeader();
 
+	int NFImireHeader(unsigned int uiSize);
+
 	//plein de getter / setter
 
 	const nifti_1_header NFIgetHeader() const;
