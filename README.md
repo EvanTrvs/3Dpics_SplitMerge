@@ -24,7 +24,7 @@ Le format d’image traité est le NIfTI (Neuroimaging Informatics Technology In
 ### Exécution
 - **Exécution mode console, avec insertion de paramètres**
   ```bash
-  ./NiiSplitMerge.exe [critère d'homogénéité] [seuil de segmentation] [chemin image source] [chemin image segmentation]
+  ./NiiSplitMerge.exe [critère homogénéité] [seuil de segmentation] [chemin image source] [chemin image segmentation]
   ```
 ### Paramètres
 | Paramètre                    | Description                                       | Champ possibles
