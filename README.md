@@ -55,7 +55,7 @@ Fichier de Configuration : Pour accéder à des fonctionnalités avancées, un f
 
 Le fichier est parsé en suivant le format "Clé"="Valeur" ligne par ligne. Les lignes débutant par //, #, ou ; sont considérées comme des commentaires et seront ignorées.
 
-## Exemples D'utilisation
+## Exemples d'utilisations
 
 ### Segmentation Standard
 **Objectif :** Obtenir une image segmentée avec un critère d'homogénéité de 5% et une taille minimale de segmentation de 2 voxels.
