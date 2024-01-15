@@ -22,7 +22,15 @@ Le format d’image traité est le NIfTI (Neuroimaging Informatics Technology In
 - Compilation du code source c++
 
 ### Exécution
-- **Mode Console**
+- **Exécution mode console, avec insertion de paramètres**
   ```bash
   ./NiiSplitMerge.exe [critère d'homogénéité] [seuil de segmentation] [chemin image source] [chemin image segmentation]
   ```
+### Paramètres
+| Paramètre                    | Description                                       | Champ possibles
+|---|---------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| Critère d’homogénéité | Définit la similarité souhaitée entre les valeurs d'une région pour qu’elle soit considéré homogène                  | Flottant dans l'intervalle [0, 1]
+| Seuil de segmentation| Définit la taille minimale que peut prendre une région, limite la segmentation a une certaine profondeur | Entier naturel dans l'intervalle [1, 10 000]
+| Chemin image source | Chemin vers l'image NIfTI source à segmenter | Chemin de fichier existant avec extension .nii
+| Chemin image segmentation | Chemin où les images résultantes seront enregistrées | Chemin de fichier avec extension .nii
+| Fichier de configuration (optionnel) | Fichier de configuration avancée | Chemin de fichier existant avec extension .txt
