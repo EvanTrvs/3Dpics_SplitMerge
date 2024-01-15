@@ -27,10 +27,34 @@ Le format d’image traité est le NIfTI (Neuroimaging Informatics Technology In
   ./NiiSplitMerge.exe [critère homogénéité] [seuil de segmentation] [chemin image source] [chemin image segmentation]
   ```
 ### Paramètres
-| Paramètre                    | Description                                       | Champ possibles
+| Paramètre                    | Description                                       | Champs possibles
 |---|---------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | Critère d’homogénéité | Définit la similarité souhaitée entre les valeurs d'une région pour qu’elle soit considéré homogène                  | Flottant dans l'intervalle [0, 1]
 | Seuil de segmentation| Définit la taille minimale que peut prendre une région, limite la segmentation a une certaine profondeur | Entier naturel dans l'intervalle [1, 10 000]
 | Chemin image source | Chemin vers l'image NIfTI source à segmenter | Chemin de fichier existant avec extension .nii
 | Chemin image segmentation | Chemin où les images résultantes seront enregistrées | Chemin de fichier avec extension .nii
 | Fichier de configuration (optionnel) | Fichier de configuration avancée | Chemin de fichier existant avec extension .txt
+
+### Paramètres avancés
+
+Image préenregistrée : à la place du 3ème argument avec la syntaxe "mireN", où N est un entier naturel non signé non nul. Utilise NIfTI source préenregistré de dimension 32x25xN dans le processus de segmentation d'image 3D.
+
+Fichier de Configuration : Pour accéder à des fonctionnalités avancées, un fichier de configuration optionnel peut être utilisé. Le fichier doit avoir l'extension .txt et respecter la syntaxe suivante
+| Clé                    | Description                                       | Valeurs
+|---|---------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| prepro | Plage de prétraitement | min,max (deux entiers naturels séparés par une virgule)
+| split | Choix de stratégie de division | N (0, 1, 2 - voir guide des stratégies)
+| neighbourg | Choix de stratégie de voisinage | N (0, 1, 2 - voir guide des stratégies)
+| merge | Choix de stratégie de fusion | N (0, 1, 2 - voir guide des stratégies)
+| preproimg | Production de l'image de prétraitement | true ou false
+| splitimg | Production de l'image de segmentation Split | true ou false
+| mergeimg | Production de l'image de segmentation Split and Merge | true ou false
+| details | Activation/désactivation de l'affichage console détaillé | true ou false
+Le fichier est parsé en suivant le format "Clé"="Valeur" ligne par ligne. Les lignes débutant par //, #, ou ; sont considérées comme des commentaires et seront ignorées.
+
+## Exemples D'Utilisation
+
+#### Segmentation Standard
+**Objectif :** Obtenir une image segmentée avec un critère d'homogénéité de 5% et une taille minimale de segmentation de 2 voxels.
+```bash
+./NiiSplitMerge.exe 0.05 2 source.nii sortie.nii
