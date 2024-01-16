@@ -94,6 +94,7 @@ details=false
 Ce projet, développé en C++14 (/std:c++14) et compilé avec GNU G++. Le code source fait appel à des librairies standard via ainsi qu'à des librairies externes, notamment :
 - BGL (Boost Graph Library) : Facilite la manipulation des graphes.
 - Boost Multidimensional Array Library : Permet la manipulation efficace de tableaux multidimensionnels.
+  
 [Release boost_1_83_0](https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/)
 
 ### Guide des stratégies
