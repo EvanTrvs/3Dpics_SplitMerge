@@ -99,7 +99,7 @@ Ce projet, développé en C++14 (/std:c++14) et compilé avec GNU G++. Le code s
 ### Guide des stratégies
 | Fonction | Indice | Titre | Description
 |---|---------------------------------------------------|----------------------------------------------------------|---------------------------------------------------------------|
-| Split | 0 | CLassic | Séparation du multi-array en analysant tout d’abord l’homogénéité du fragment puis si ce dernier n’est pas homogène, les dimensions divisibles.
+| Split | 0 | Classic | Séparation du multi-array en analysant tout d’abord l’homogénéité du fragment puis si ce dernier n’est pas homogène, les dimensions divisibles.
 | Split | 1 | Classic avec Threads | Séparation du multi-array en analysant tout d’abord l’homogénéité du fragment puis si ce dernier n’est pas homogène, les dimensions divisibles. Le travail de la première division est séparé en threads distincts.
 | Split | 2 | Classic avec conditions inversé | Séparation du multi-array en analysant tout d’abord les dimensions divisibles puis test l’homogénéité du fragment.
 | Voisinage | 0 | Stockage de potentiel voxel voisin dans une liste | Analyse des voxels des fragments, en recherchant si un voxel voisin a été précédemment étudié. Le stockage est une liste utilisant la dichotomie.
