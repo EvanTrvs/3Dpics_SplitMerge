@@ -60,17 +60,17 @@ Le fichier est parsé en suivant le format "Clé"="Valeur" ligne par ligne. Les 
 ### Segmentation Standard
 **Objectif :** Obtenir une image segmentée avec un critère d'homogénéité de 5% et une taille minimale de segmentation de 2 voxels.
 ```bash
-./NiiSplitMerge.exe 0,05 2 source.nii sortie.nii
+./NiiSplitMerge.exe 0.05 2 source.nii sortie.nii
 ```
 ### Utilisation de l'Image Préenregistrée "Mire"
 **Objectif :** Utiliser l'image préenregistrée NIfTI "Mire" avec une dimension de 50.
 ```bash
-./NiiSplitMerge.exe 0,15 3 mire50 image/mire50_0-5_3.nii
+./NiiSplitMerge.exe 0.15 3 mire50 image/mire50_0-5_3.nii
 ```
 ### Segmentation avec Paramètres Avancés
 **Objectif :**  Obtenir l'image résultante de chaque procédé avec des stratégies spécifiques et un prétraitement des valeurs entre 0 et 10.
 ```bash
-./NiiSplitMerge.exe 0,05 2 mire4 sortie.nii config.txt
+./NiiSplitMerge.exe 0.05 2 mire4 sortie.nii config.txt
 ```
 config.txt :
 ```bash
