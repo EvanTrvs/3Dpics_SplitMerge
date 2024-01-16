@@ -54,8 +54,6 @@ public:
 
 	int NFImireHeader(unsigned int uiSize);
 
-	//plein de getter / setter
-
 	const nifti_1_header NFIgetHeader() const;
 
 	std::string NFIgetHeaderInfo() const;

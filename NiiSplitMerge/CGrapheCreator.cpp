@@ -187,12 +187,11 @@ void EcritureDichotomie(vector <std::pair<unsigned int, vector<unsigned int>>> &
 	unsigned int uiIndice;
 	std::pair<unsigned int, vector<unsigned int>> puivuiComparaison;
 
-	unsigned int uiSommeXZ = puivuiNewPair.second[0] + puivuiNewPair.second[2];
-	unsigned int uiSommeYZ = puivuiNewPair.second[1] + puivuiNewPair.second[2];
-	unsigned int uiSommeXY = puivuiNewPair.second[0] + puivuiNewPair.second[1];
-
 	//North / South Faces
 	if (sOrientation == "North_South") { //Look on X and Z 
+
+		unsigned int uiSommeXZ = puivuiNewPair.second[0] + puivuiNewPair.second[2];
+
 		while (uiBorneInf != uiBorneSup) {
 
 			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Mid-section index analyzed
@@ -213,6 +212,9 @@ void EcritureDichotomie(vector <std::pair<unsigned int, vector<unsigned int>>> &
 
 	//East / West Faces
 	else if (sOrientation == "East_West") {//Look on Y / Z
+
+		unsigned int uiSommeYZ = puivuiNewPair.second[1] + puivuiNewPair.second[2];
+
 		while (uiBorneInf != uiBorneSup) {
 
 			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Mid-section index analyzed
@@ -233,6 +235,9 @@ void EcritureDichotomie(vector <std::pair<unsigned int, vector<unsigned int>>> &
 
 	//Behind / Front Faces
 	else { //Look on sur X / Y
+
+		unsigned int uiSommeXY = puivuiNewPair.second[0] + puivuiNewPair.second[1];
+
 		while (uiBorneInf != uiBorneSup) {
 
 			uiIndice = (uiBorneInf + uiBorneSup) / 2; //Mid-section index analyzed
@@ -307,13 +312,6 @@ vector <bool> CGrapheCreator::GCRVerticesOnBorder(BGLGraphe::vertex_descriptor v
 ***** Effects : Filled the vector vpuiGPCVoisinPrimal (attribut) of pairs of neighbors with voxel													*****
 ********************************************************************************************************************************************************/
 void CGrapheCreator::GCRDetectionVoisinVoxel(vector <CFragment> vFRGLeafs, unsigned int uiTailleMin) {
-
-	//Exception management : uiTailleMin = 0
-	if (uiTailleMin == 0) {
-		CException EXCErreur;
-		EXCErreur.EXCModifierValeur(SEUIL_MIN);
-		throw (EXCErreur);
-	}
 
 	//Recovery of matrice informations (dimensions and entire matrice)
 	vector <unsigned int> vuiDimensionsMatrice = vFRGLeafs[0].FRGGetDimensionMatrice();
@@ -534,13 +532,6 @@ void CGrapheCreator::GCRDetectionVoisinVoxel(vector <CFragment> vFRGLeafs, unsig
 ********************************************************************************************************************************************************/
 void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, unsigned int uiTailleMin) {
 
-	//Exception management : uiTailleMin = 0
-	if (uiTailleMin == 0) {
-		CException EXCErreur;
-		EXCErreur.EXCModifierValeur(SEUIL_MIN);
-		throw (EXCErreur);
-	}
-
 	//Recovery of matrice informations (dimensions)
 	vector <unsigned int> vuiDimensionsMatrice = vFRGLeafs[0].FRGGetDimensionMatrice();
 
@@ -572,6 +563,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 	}
 
 	//Loop on all leafs (vFRGLeafs = fragments generate with the Split) 
+	unsigned int uiConnexite = 0;
 	for (vector<CFragment>::iterator itFRGFeuille = vFRGLeafs.begin(); itFRGFeuille != vFRGLeafs.end(); itFRGFeuille++) {
 
 		//Recovery of fragment informations (coos and dimensions)
@@ -579,7 +571,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 		vector <unsigned int> vuiDimensionsFragment = (*itFRGFeuille).FRGGetDimensions();
 		
 		/* For the next part : Set Connexity */
-		unsigned int uiConnexite = (*itFRGFeuille).FRGGetConnexite();
+		(*itFRGFeuille).FRGSetConnexite(uiConnexite);
 		vvuiGPCConnexite.push_back({ uiConnexite });
 
 		//storage of fragment on the graphe
@@ -599,7 +591,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 
 					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionSouth[vuiCoosFragment[1]], vuiCoos, "North_South");
-
+					
 					//If coherence is Found
 					if (itFind != JonctionSouth[vuiCoosFragment[1]].end()) {
 
@@ -615,7 +607,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 					}
 					else {
 						//If no coherence found, store voxel in vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionNorth((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionNorth(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionNorth[vuiCoosFragment[1]], puivuiCoosJonctionNorth, "North_South");
 					}
 				}
@@ -633,7 +625,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 
 					//Search for coherence in the opposite vector (each voxel without coherence is stored for future coherence with another voxel)
 					vector <std::pair<unsigned int, vector<unsigned int>>>::iterator itFind = LectureDichotomie(JonctionNorth[vuiCoosFragment[1] + vuiDimensionsFragment[1]], vuiCoos, "North_South");
-
+					
 					//If coherence is Found
 					if (itFind != JonctionNorth[vuiCoosFragment[1] + vuiDimensionsFragment[1]].end()) {
 
@@ -649,7 +641,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 					}
 					else {
 						//If no coherence found, store voxel in vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionSouth((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionSouth(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionSouth[vuiCoosFragment[1] + vuiDimensionsFragment[1]], puivuiCoosJonctionSouth, "North_South");
 					}
 				}
@@ -682,7 +674,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 					}
 					else {
 						//If no coherence found, store voxel in vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionWest((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionWest(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionWest[vuiCoosFragment[0]], puivuiCoosJonctionWest, "East_West");
 					}
 				}
@@ -716,7 +708,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 					}
 					else {
 						//If no coherence found, store voxel in vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionEast((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionEast(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionEast[vuiCoosFragment[0] + vuiDimensionsFragment[0]], puivuiCoosJonctionEast, "East_West");
 					}
 				}
@@ -750,7 +742,7 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 					}
 					else {
 						//If no coherence found, store voxel in vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionBehind((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionBehind(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionBehind[vuiCoosFragment[2] + vuiDimensionsFragment[2]], puivuiCoosJonctionBehind, "Front_Behind");
 					}
 				}
@@ -783,12 +775,14 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 					}
 					else {
 						//If no coherence found, store voxel in vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionFront((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionFront(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionFront[vuiCoosFragment[2]], puivuiCoosJonctionFront, "Front_Behind");
 					}
 				}
 			}
 		}
+
+		uiConnexite++;
 	}
 
 	//Delete all duplicates
@@ -806,13 +800,6 @@ void CGrapheCreator::GCRDetectionVoisinV2Dicho(vector <CFragment> vFRGLeafs, uns
 ********************************************************************************************************************************************************/
 void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsigned int uiTailleMin) {
 
-	//Exception management : uiTailleMin = 0
-	if (uiTailleMin == 0) {
-		CException EXCErreur;
-		EXCErreur.EXCModifierValeur(SEUIL_MIN);
-		throw (EXCErreur);
-	}
-
 	//Initialize vectors of vectors to store future neighbors based on an axis
 	vector <std::pair<unsigned int, vector<unsigned int>>> JonctionNorth;
 	vector <std::pair<unsigned int, vector<unsigned int>>> JonctionSouth;
@@ -822,6 +809,7 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 	vector <std::pair<unsigned int, vector<unsigned int>>> JonctionFront;
 
 	//Loop on all leafs (vFRGLeafs = fragments generate with the Split)
+	unsigned int uiConnexite = 0;
 	for (vector<CFragment>::iterator itFRGFeuille = vFRGLeafs.begin(); itFRGFeuille != vFRGLeafs.end(); itFRGFeuille++) {
 
 		//Recovery of fragment informations (coos and dimensions)
@@ -829,7 +817,7 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 		vector <unsigned int> vuiDimensionsFragment = (*itFRGFeuille).FRGGetDimensions();
 
 		/* For the next part : Set Connexity */
-		unsigned int uiConnexite = (*itFRGFeuille).FRGGetConnexite();
+		(*itFRGFeuille).FRGSetConnexite(uiConnexite);
 		vvuiGPCConnexite.push_back({ uiConnexite });
 
 		//storage of fragment on the graphe
@@ -865,7 +853,7 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 					}
 					else {
 						//If no coherence found, store voxel in vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionNorth((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionNorth(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionNorth, puivuiCoosJonctionNorth, "North_South");
 					}
 				}
@@ -899,7 +887,7 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 					}
 					else {
 						//If no coherence found, store voxel in vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionSouth((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionSouth(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionSouth, puivuiCoosJonctionSouth, "North_South");
 					}
 				}
@@ -933,7 +921,7 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 					else {
 
 						//If no coherence is found, store the voxel in a vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionWest((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionWest(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionWest, puivuiCoosJonctionWest, "East_West");
 					}
 				}
@@ -967,7 +955,7 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 					}
 					else {
 						//If no coherence is found, store the voxel in a vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionEast((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionEast(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionEast, puivuiCoosJonctionEast, "East_West");
 					}
 				}
@@ -1001,7 +989,7 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 					}
 					else {
 						//If no coherence is found, store the voxel in a vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionBehind((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionBehind(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionBehind, puivuiCoosJonctionBehind, "Front_Behind");
 					}
 				}
@@ -1034,12 +1022,14 @@ void CGrapheCreator::GCRDetectionVoisinDicho(vector <CFragment> vFRGLeafs, unsig
 					}
 					else {
 						//If no coherence is found, store the voxel in a vector
-						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionFront((*itFRGFeuille).FRGGetConnexite(), vuiCoos);
+						std::pair<unsigned int, vector<unsigned int>> puivuiCoosJonctionFront(uiConnexite, vuiCoos);
 						EcritureDichotomie(JonctionFront, puivuiCoosJonctionFront, "Front_Behind");
 					}
 				}
 			}
 		}
+
+		uiConnexite++;
 	}
 
 	//Delete all duplicates
@@ -1233,7 +1223,7 @@ void CGrapheCreator::GCRMerge(unsigned int uiHomogeneite) {
 		uiNbFusion++;
 	}
 
-	std::cout << "Nombre de Fusion : " << uiNbFusion << std::endl;
+	std::cout << "[NiiSplitMerge.exe]\tNumber of merged areas:\t" << uiNbFusion << std::endl;
 }
 
 /********************************************************************************************************************************************************
@@ -1309,7 +1299,7 @@ void CGrapheCreator::GCRMergeThread(unsigned int uiHomogeneite) {
 		uiNbFusion++;
 	}
 
-	std::cout << "Nombre de Fusion : " << uiNbFusion << std::endl;
+	std::cout << "[NiiSplitMerge.exe]\tNumber of merged areas:\t" << uiNbFusion << std::endl;
 }
 
 /********************************************************************************************************************************************************
@@ -1365,7 +1355,7 @@ void CGrapheCreator::GCRMergeSansChoix(unsigned int uiHomogeneite) {
 		uiNbFusion++;
 	}
 
-	std::cout << "Nombre de Fusion : " << uiNbFusion << std::endl;
+	std::cout << "[NiiSplitMerge.exe]\tNumber of merged areas:\t" << uiNbFusion << std::endl;
 }
 
 /********************************************************************************************************************************************************
@@ -1382,7 +1372,14 @@ void CGrapheCreator::GCRCreationGraphe(vector <CFragment> vFRGLeafs, unsigned in
 		throw (CException(NO_LEAFS));
 	}
 
-	clock_t cTempsVoisin =  clock();
+	//Exception management : uiTailleMin = 0
+	if (uiTailleMin == 0) {
+		CException EXCErreur;
+		EXCErreur.EXCModifierValeur(SEUIL_MIN);
+		throw (EXCErreur);
+	}
+
+	clock_t cTempsVoisin = clock();
 
 	if (uiVersionNeighBor == 0) {
 		GCRDetectionVoisinVoxel(vFRGLeafs, uiTailleMin);
@@ -1396,56 +1393,33 @@ void CGrapheCreator::GCRCreationGraphe(vector <CFragment> vFRGLeafs, unsigned in
 	else throw (CException(UNDIFIED_VERSION));
 
 	clock_t cVoisin = clock() - cTempsVoisin;
-	std::cout << "Temps de la recherche voisin : " << (double)cVoisin / CLOCKS_PER_SEC << std::endl;
-	std::cout << "nombre de voisins : " << vpuiGPCVoisinPrimal.size() << std::endl;
 
-	std::cout << "MERGE TIME : " << std::endl;
+	std::cout << "[NiiSplitMerge.exe] Neighbor results:"
+		<< "\n[NiiSplitMerge.exe]\tNumber of pair:\t\t" << vpuiGPCVoisinPrimal.size()
+		<< "\n[NiiSplitMerge.exe]\tExecution time:\t\t" << (double)cVoisin / CLOCKS_PER_SEC << std::endl;
 
-	BGLGraphe saveGraphe = alGPCGraphe;
-	vector <vector <unsigned int>> vvuiConnexiteSave = vvuiGPCConnexite;
-	vector <std::pair<unsigned int, unsigned int>> vpuiGPCVoisinPrimalSave = vpuiGPCVoisinPrimal;
+	clock_t cTemps = clock();
+	clock_t cTempsMerge;
 
-	clock_t cTempsV1 = clock();
+	std::cout << "[NiiSplitMerge.exe] Merge results:" << std::endl;
 
-	if (uiVersionMerge != -1) {
-		cout << "MERGE " << endl;
+	if (uiVersionMerge == 0) {
 		GCRMerge(uiHomogeneite);
+
+		cTempsMerge = clock() - cTemps;
 	}
-	else throw (CException(UNDIFIED_VERSION));
+	else if (uiVersionMerge == 1) {
+		GCRMergeThread(uiHomogeneite);
 
-	clock_t cMerge2 = clock() - cTempsV1;
-
-	std::cout << "Temps de la merge : " << (double)cMerge2 / CLOCKS_PER_SEC << std::endl << std::endl;
-
-	alGPCGraphe = saveGraphe;
-	vvuiGPCConnexite = vvuiConnexiteSave;
-	vpuiGPCVoisinPrimal = vpuiGPCVoisinPrimalSave;
-
-	clock_t cTempsV1Thread = clock();
-
-	if (uiVersionMerge != -1) {
-		cout << "MERGE THREAD " << endl;
-		//GCRMergeThread(uiHomogeneite);
+		cTempsMerge = clock() - cTemps;
 	}
-	else throw (CException(UNDIFIED_VERSION));
-
-	clock_t cMergeThread = clock() - cTempsV1Thread;
-
-	std::cout << "Temps de la merge thread : " << (double)cMergeThread / CLOCKS_PER_SEC << std::endl << std::endl;
-
-	alGPCGraphe = saveGraphe;
-	vvuiGPCConnexite = vvuiConnexiteSave;
-	vpuiGPCVoisinPrimal = vpuiGPCVoisinPrimalSave;
-
-	clock_t cTempsSansChoix = clock();
-
-	if (uiVersionMerge != -1) {
-		cout << "MERGE Sans Choix " << endl;
+	else if (uiVersionMerge == 2) {
 		GCRMergeSansChoix(uiHomogeneite);
+
+		cTempsMerge = clock() - cTemps;
+
 	}
 	else throw (CException(UNDIFIED_VERSION));
 
-	clock_t cMergeSansChoix = clock() - cTempsSansChoix;
-
-	std::cout << "Temps de la merge sans choix : " << (double)cMergeSansChoix / CLOCKS_PER_SEC << std::endl << std::endl;
+	std::cout << "[NiiSplitMerge.exe]\tExecution time:\t\t" << (double)cTempsMerge / CLOCKS_PER_SEC << std::endl;
 }

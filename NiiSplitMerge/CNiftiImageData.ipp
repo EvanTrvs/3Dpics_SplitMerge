@@ -144,94 +144,18 @@ int CNiftiImageData<TypeT>::NFDwriteNifti(std::string sPathFile, boost::multi_ar
 	data = (uint16_t*)malloc(sizeof(uint16_t) * hdrNFIheader.dim[1] * hdrNFIheader.dim[2] * hdrNFIheader.dim[3] * hdrNFIheader.dim[4]);
 	if (data == NULL) throw CException(5);	//error openning file
 
-	/*
-	for (uiLoop = 0; i < hdrNFIheader.dim[1] * hdrNFIheader.dim[2] * hdrNFIheader.dim[3] * hdrNFIheader.dim[4]; uiLoop++) {
-		data[uiLoop] = i / hdrNFIheader.scl_slope;
-	}*/
 
-	//std::cout << MultiArrayParam.shape()[0] << "," << MultiArrayParam.shape()[1] << "," << MultiArrayParam.shape()[2] << std::endl;
-	//std::cout << hdrNFIheader.dim[1] << "," << hdrNFIheader.dim[2] << "," << hdrNFIheader.dim[3] << std::endl;
-
-	if (MultiArrayParam.shape()[0] == hdrNFIheader.dim[1]) {
-		if (MultiArrayParam.shape()[1] == hdrNFIheader.dim[2]) {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[a][b][c].GSLGetGray());
-						uiLoop++;
-					}
+	if ((MultiArrayParam.shape()[0] == hdrNFIheader.dim[3]) && (MultiArrayParam.shape()[1] == hdrNFIheader.dim[2]) && (MultiArrayParam.shape()[2] == hdrNFIheader.dim[1])) {
+		for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
+			for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
+				for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
+					data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[c][b][a].GSLGetGray());
+					//data[uiLoop] = static_cast<uint16_t>(uiLoop);
+					uiLoop++;
 				}
 			}
 		}
-		else {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[a][c][b].GSLGetGray());
-						uiLoop++;
-					}
-				}
-			}
-		}
-	}
-	else if (MultiArrayParam.shape()[1] == hdrNFIheader.dim[1]) {
-		if (MultiArrayParam.shape()[0] == hdrNFIheader.dim[2]) {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[b][a][c].GSLGetGray());
-						uiLoop++;
-					}
-				}
-			}
-		}
-		else {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[c][a][b].GSLGetGray());
-						uiLoop++;
-					}
-				}
-			}
-		}
-	}
-	else if (MultiArrayParam.shape()[2] == hdrNFIheader.dim[1]) {
-		if (MultiArrayParam.shape()[0] == hdrNFIheader.dim[2]) {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[b][c][a].GSLGetGray());
-						uiLoop++;
-					}
-				}
-			}
-		}
-		else {
-			for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[c][b][a].GSLGetGray());
-						//data[uiLoop] = static_cast<uint16_t>(uiLoop);
-						uiLoop++;
-					}
-				}
-			}
-		}
-
-		/*for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-					for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-						//data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[c][b][a]);
-						data[uiLoop] = static_cast<uint16_t>(uiLoop);
-						uiLoop++;
-					}
-				}
-			}
-		}*/
-
-	}
-	else throw CException(5);	//error openning file
+	} else throw CException(5);	//error openning file
 
 	//write extender pad
 	ret = (int)fwrite(&pad, 4, 1, fp);
@@ -250,7 +174,7 @@ int CNiftiImageData<TypeT>::NFDwriteNifti(std::string sPathFile, boost::multi_ar
 
 template <typename TypeT>
 int CNiftiImageData<TypeT>::NFDwriteNiftiUi(std::string sPathFile, boost::multi_array<unsigned int, 3>& MultiArrayParam) {
-	std::cout << this->NFIgetHeaderInfo() << std::endl;
+	//std::cout << this->NFIgetHeaderInfo() << std::endl;
 
 	//hdrNFIheader.sform_code = 1;
 	//hdrNFIheader.xyzt_units = 10;
@@ -273,94 +197,18 @@ int CNiftiImageData<TypeT>::NFDwriteNiftiUi(std::string sPathFile, boost::multi_
 	data = (uint16_t*)malloc(sizeof(uint16_t) * hdrNFIheader.dim[1] * hdrNFIheader.dim[2] * hdrNFIheader.dim[3] * hdrNFIheader.dim[4]);
 	if (data == NULL) throw CException(5);	//error openning file
 
-	/*
-	for (uiLoop = 0; i < hdrNFIheader.dim[1] * hdrNFIheader.dim[2] * hdrNFIheader.dim[3] * hdrNFIheader.dim[4]; uiLoop++) {
-		data[uiLoop] = i / hdrNFIheader.scl_slope;
-	}*/
-
-	//std::cout << MultiArrayParam.shape()[0] << "," << MultiArrayParam.shape()[1] << "," << MultiArrayParam.shape()[2] << std::endl;
-	//std::cout << hdrNFIheader.dim[1] << "," << hdrNFIheader.dim[2] << "," << hdrNFIheader.dim[3] << std::endl;
-
-	if (MultiArrayParam.shape()[0] == hdrNFIheader.dim[1]) {
-		if (MultiArrayParam.shape()[1] == hdrNFIheader.dim[2]) {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[a][b][c]);
-						uiLoop++;
-					}
+	if ((MultiArrayParam.shape()[0] == hdrNFIheader.dim[3]) && (MultiArrayParam.shape()[1] == hdrNFIheader.dim[2]) && (MultiArrayParam.shape()[2] == hdrNFIheader.dim[1])) {
+		for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
+			for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
+				for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
+					data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[c][b][a]);
+					//data[uiLoop] = static_cast<uint16_t>(uiLoop);
+					//if (b == 2) std::cout << MultiArrayParam[c][b][a] << ",";
+					uiLoop++;
 				}
 			}
 		}
-		else {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[a][c][b]);
-						uiLoop++;
-					}
-				}
-			}
-		}
-	}
-	else if (MultiArrayParam.shape()[1] == hdrNFIheader.dim[1]) {
-		if (MultiArrayParam.shape()[0] == hdrNFIheader.dim[2]) {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[b][a][c]);
-						uiLoop++;
-					}
-				}
-			}
-		}
-		else {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[c][a][b]);
-						uiLoop++;
-					}
-				}
-			}
-		}
-	}
-	else if (MultiArrayParam.shape()[2] == hdrNFIheader.dim[1]) {
-		if (MultiArrayParam.shape()[0] == hdrNFIheader.dim[2]) {
-			for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[b][c][a]);
-						uiLoop++;
-					}
-				}
-			}
-		}
-		else {
-			for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-				for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-					for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-						data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[c][b][a]);
-						//data[uiLoop] = static_cast<uint16_t>(uiLoop);
-						uiLoop++;
-					}
-				}
-			}
-		}
-
-		/*for (int a = 0; a < hdrNFIheader.dim[1]; a++) {
-				for (int c = 0; c < hdrNFIheader.dim[3]; c++) {
-					for (int b = 0; b < hdrNFIheader.dim[2]; b++) {
-						//data[uiLoop] = static_cast<uint16_t>(MultiArrayParam[c][b][a]);
-						data[uiLoop] = static_cast<uint16_t>(uiLoop);
-						uiLoop++;
-					}
-				}
-			}
-		}*/
-
-	}
-	else throw CException(5);	//error openning file
+	} else throw CException(5);	//error openning file
 
 	//write extender pad
 	ret = (int)fwrite(&pad, 4, 1, fp);

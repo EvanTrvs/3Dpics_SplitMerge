@@ -29,6 +29,9 @@ vector<CFragment> CMultiArrayOperation::MAOSplits(boost::multi_array<CGrayScale,
 	if (uiVersion == 0) {
 		SplitOperation.SOTSplitMatrice(FRGOrigine, uiHomogeneite, uiMinSize, vFRGresult);
 	}
+	else if (uiVersion == 2){
+		SplitOperation.SOTSplitMatriceSwitch(FRGOrigine, uiHomogeneite, uiMinSize, vFRGresult);
+	}
 	else if (uiVersion == 1) {
 
 		//Initialization of threads vector
@@ -131,6 +134,41 @@ void CMultiArrayOperation::MAOcreateFromNifti(boost::multi_array<CGrayScale, 3>&
 				r++;
 			}
 		}
+	}
+}
+
+/************************************************************************************************************************************************
+***** MultiArrayFromFragments : Method for multi_array from fragment list																	*****
+*************************************************************************************************************************************************
+***** Input : MultiArrayMire : boost::multi_array<CGrayScale, 3> & | vFRGparam : const vector<CFragment> &									*****
+***** Precondition : Nothing								                                                                                *****
+***** Output : None																															*****
+***** Effects : Initialize multi_array from fragment list 																					*****
+************************************************************************************************************************************************/
+void CMultiArrayOperation::MultiArrayFromFragments(boost::multi_array<CGrayScale, 3>& MultiArrayParam, const vector<CFragment>& vFRGparam) {
+	unsigned int uiDimZ = (unsigned int)MultiArrayParam.shape()[0];
+	unsigned int uiDimY = (unsigned int)MultiArrayParam.shape()[1];
+	unsigned int uiDimX = (unsigned int)MultiArrayParam.shape()[2];
+
+	unsigned int uiIterator = 0;
+	// Pour chaque fragment dans la liste
+	for (const CFragment& fragment : vFRGparam) {
+		// Vérifier que le fragment est dans les limites du MultiArrayParam
+		for (unsigned int z = 0; z < fragment.FRGGetDimensions()[0]; ++z) {
+			for (unsigned int y = 0; y < fragment.FRGGetDimensions()[1]; ++y) {
+				for (unsigned int x = 0; x < fragment.FRGGetDimensions()[2]; ++x) {
+					unsigned int arrayZ = fragment.FRGGetCoos()[0] + z;
+					unsigned int arrayY = fragment.FRGGetCoos()[1] + y;
+					unsigned int arrayX = fragment.FRGGetCoos()[2] + x;
+
+					// Vérifier que les indices sont dans les limites du MultiArrayParam
+					if (arrayZ < uiDimZ && arrayY < uiDimY && arrayX < uiDimX) {
+						MultiArrayParam[arrayZ][arrayY][arrayX] = CGrayScale(uiIterator);
+					}
+				}
+			}
+		}
+		uiIterator++;
 	}
 }
 

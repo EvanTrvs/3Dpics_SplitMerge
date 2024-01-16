@@ -48,6 +48,16 @@ public:
 	void MAOcreateFromNifti(boost::multi_array<CGrayScale, 3>& MultiArrayParam, const CNiftiImageData<uint16_t> & NFDparam);
 
 	/************************************************************************************************************************************************
+	***** MultiArrayFromFragments : Method for multi_array from fragment list																	*****
+	*************************************************************************************************************************************************
+	***** Input : MultiArrayMire : boost::multi_array<CGrayScale, 3> & | vFRGparam : const vector<CFragment> &									*****
+	***** Precondition : Nothing								                                                                                *****
+	***** Output : None																															*****
+	***** Effects : Initialize multi_array from fragment list 																					*****
+	************************************************************************************************************************************************/
+	void MultiArrayFromFragments(boost::multi_array<CGrayScale, 3>& MultiArrayParam, const vector<CFragment>& vFRGparam);
+
+	/************************************************************************************************************************************************
 	***** Operator<<																															*****
 	*************************************************************************************************************************************************
 	***** Input : os : std::ostream & | MultiArrayParam	: const boost::multi_array<CGrayScale, 3> &												*****

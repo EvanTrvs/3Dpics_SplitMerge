@@ -40,6 +40,16 @@ private:
 	***** Effects : Split Method according to parameter requirements with threads																											*****
 	********************************************************************************************************************************************************************************************/
 	void SOTSplitMatriceThreads(CFragment FRGMatrice, const unsigned int CritereHomogeneite, const unsigned int uiSeuilMin, vector<CFragment> & vFRGVectorFinal, vector<std::thread> & OptimizationByThreads);
+
+	/************************************************************************************************************************************************
+	***** SOTSplitMatriceSwitch : Method for Split A Fragment																					*****
+	*************************************************************************************************************************************************
+	***** Input : FRGMatrice : CFragment & | CritereHomogeneite, uiSeuilMin : const unsigned int | vFRGVectorFinal : vector<CFragment> &		*****
+	***** Precondition : uiSeuilMin need to not be null                                                                                         *****
+	***** Output : None																															*****
+	***** Effects : Split Method according to parameter requirements, same a initial but with switch conditions verifications					*****
+	************************************************************************************************************************************************/
+	void SOTSplitMatriceSwitch(CFragment & FRGMatrice, const unsigned int CritereHomogeneite, const unsigned int uiSeuilMin, vector<CFragment>& vFRGVectorFinal);
 };
 
 #endif

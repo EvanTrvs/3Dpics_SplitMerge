@@ -95,7 +95,7 @@ public:
 	***** Output : vuiDimMatrice : vector <unsigned int>																						*****
 	***** Effects : Return the dimensions of the variable pmaGSLFRGMultiArray 																	*****
 	************************************************************************************************************************************************/
-	vector <unsigned int> FRGGetDimensionMatrice();
+	vector <unsigned int> FRGGetDimensionMatrice() const;
 
 	/************************************************************************************************************************************************
 	***** FRGGetElement : Reading Accessor																										*****
@@ -105,7 +105,7 @@ public:
 	***** Output : uiElement : unsigned int																										*****
 	***** Effects : Return an element of the variable pmaGSLFRGMultiArray 																		*****
 	************************************************************************************************************************************************/
-	CGrayScale FRGGetElement(unsigned int uiX, unsigned int uiY, unsigned int uiZ);
+	CGrayScale FRGGetElement(unsigned int uiX, unsigned int uiY, unsigned int uiZ) const;
 
 	/************************************************************************************************************************************************
 	***** FRGGetCoos : Reading Accessor																											*****
@@ -115,7 +115,7 @@ public:
 	***** Output : vuiFRGConer : vector <unsigned int>																							*****
 	***** Effects : Return variable vuiFRGConer																									*****
 	************************************************************************************************************************************************/
-	vector <unsigned int> FRGGetCoos();
+	vector <unsigned int> FRGGetCoos() const;
 
 	/************************************************************************************************************************************************
 	***** FRGGetDimensions : Reading Accessor																									*****
@@ -125,7 +125,7 @@ public:
 	***** Output : vuiFRGDimension : vector <unsigned int>																						*****
 	***** Effects : Return variable vuiFRGDimension																								*****
 	************************************************************************************************************************************************/
-	vector <unsigned int> FRGGetDimensions();
+	vector <unsigned int> FRGGetDimensions() const;
 
 	/************************************************************************************************************************************************
 	***** FRGGetMinMax : Reading Accessor																										*****
@@ -135,7 +135,7 @@ public:
 	***** Output : puiFRGMinMax : std::pair<unsigned int, unsigned int>																			*****
 	***** Effects : Return variable puiFRGMinMax																								*****
 	************************************************************************************************************************************************/
-	std::pair<unsigned int, unsigned int> FRGGetMinMax();
+	std::pair<unsigned int, unsigned int> FRGGetMinMax() const;
 
 	/************************************************************************************************************************************************
 	***** FRGGetMin : Reading Accessor																											*****
@@ -145,7 +145,7 @@ public:
 	***** Output : uiMin : unsigned int																											*****
 	***** Effects : Return variable puiFRGMinMax's first element 																				*****
 	************************************************************************************************************************************************/
-	unsigned int FRGGetMin();
+	unsigned int FRGGetMin() const;
 
 	/************************************************************************************************************************************************
 	***** FRGGetMax : Reading Accessor																											*****
@@ -155,7 +155,7 @@ public:
 	***** Output : uiMax : unsigned int																											*****
 	***** Effects : Return variable puiFRGMinMax's second element 																				*****
 	************************************************************************************************************************************************/
-	unsigned int FRGGetMax();
+	unsigned int FRGGetMax() const;
 
 	/************************************************************************************************************************************************
 	***** FRGSetMinMax : Writting Accessor																										*****
@@ -205,7 +205,7 @@ public:
 	***** Output : uiFRGConnexite : unsigned int																								*****
 	***** Effects : Return variable uiFRGConnexite					 																			*****
 	************************************************************************************************************************************************/
-	unsigned int FRGGetConnexite();
+	unsigned int FRGGetConnexite() const;
 
 	/************************************************************************************************************************************************
 	***** FRGGetConnexite : Reading Accessor																									*****
@@ -225,7 +225,7 @@ public:
 	***** Output : bHomogeneity : boolean																										*****
 	***** Effects : Return True/False if the Fragment are uniform or not					 													*****
 	************************************************************************************************************************************************/
-	bool FRGHomogeneity(const unsigned int uiHomogeneite);
+	bool FRGHomogeneity(const unsigned int uiHomogeneite) const;
 
 	/************************************************************************************************************************************************
 	***** FRGHomogeneityV2 : Method for analyze homogeneity																						*****
@@ -235,7 +235,7 @@ public:
 	***** Output : puiMinMax : std::pair<unsigned int, unsigned int> *																			*****
 	***** Effects : Return Min/Max if the Fragment are uniform, nullptr else				 													*****
 	************************************************************************************************************************************************/
-	std::pair<unsigned int, unsigned int> * FRGHomogeneityV2(const unsigned int uiHomogeneite);
+	std::pair<unsigned int, unsigned int> * FRGHomogeneityV2(const unsigned int uiHomogeneite) const;
 
 	/************************************************************************************************************************************************
 	***** FRGFindMinMax : Method for return Min/Max																								*****
@@ -245,7 +245,7 @@ public:
 	***** Output : puiMinMax : std::pair <unsigned int, unsigned int>																			*****
 	***** Effects : Return the Min/Max of the Fragment										 													*****
 	************************************************************************************************************************************************/
-	std::pair<unsigned int, unsigned int> FRGFindMinMax();
+	std::pair<unsigned int, unsigned int> FRGFindMinMax() const ;
 
 	/************************************************************************************************************************************************
 	***** FRGIsSplitable : Method for return Direction Possibility of Split																		*****
@@ -255,7 +255,7 @@ public:
 	***** Output : vbDimSplitable : std::vector<bool>																							*****
 	***** Effects : Return boolean for each direction (true if is splitable, false else)										 				*****
 	************************************************************************************************************************************************/
-	std::vector<bool> FRGIsSplitable(const unsigned int uiSeuilMin);
+	std::vector<bool> FRGIsSplitable(const unsigned int uiSeuilMin) const;
 
 	/************************************************************************************************************************************************************
 	***** FRGGetNewSpots : Method for return New Fragment (Coos and Dimensions)																				*****

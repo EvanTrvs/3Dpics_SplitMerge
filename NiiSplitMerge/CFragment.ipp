@@ -174,7 +174,7 @@ inline boost::multi_array<CGrayScale, 3> * CFragment::FRGGetMatrice() {
 ***** Output : vuiDimMatrice : vector <unsigned int>																						*****
 ***** Effects : Return the dimensions of the variable pmaGSLFRGMultiArray 																	*****
 ************************************************************************************************************************************************/
-inline vector <unsigned int> CFragment::FRGGetDimensionMatrice() {
+inline vector <unsigned int> CFragment::FRGGetDimensionMatrice() const {
 
 	return { (unsigned int)pmaGSLFRGMultiArray->shape()[0], (unsigned int)pmaGSLFRGMultiArray->shape()[1], (unsigned int)pmaGSLFRGMultiArray->shape()[2] };
 }
@@ -187,7 +187,7 @@ inline vector <unsigned int> CFragment::FRGGetDimensionMatrice() {
 ***** Output : uiElement : unsigned int																										*****
 ***** Effects : Return an element of the variable pmaGSLFRGMultiArray 																		*****
 ************************************************************************************************************************************************/
-inline CGrayScale CFragment::FRGGetElement(unsigned int uiX, unsigned int uiY, unsigned int uiZ) {
+inline CGrayScale CFragment::FRGGetElement(unsigned int uiX, unsigned int uiY, unsigned int uiZ) const {
 
 	//Verification if coos are within the dimensions of the MultiArray
 	if (uiX > pmaGSLFRGMultiArray->shape()[0] ||
@@ -210,7 +210,7 @@ inline CGrayScale CFragment::FRGGetElement(unsigned int uiX, unsigned int uiY, u
 ***** Output : vuiFRGConer : vector <unsigned int>																							*****
 ***** Effects : Return variable vuiFRGConer																									*****
 ************************************************************************************************************************************************/
-inline vector <unsigned int> CFragment::FRGGetCoos() {
+inline vector <unsigned int> CFragment::FRGGetCoos() const {
 
 	return vuiFRGConer;
 }
@@ -223,7 +223,7 @@ inline vector <unsigned int> CFragment::FRGGetCoos() {
 ***** Output : vuiFRGDimension : vector <unsigned int>																						*****
 ***** Effects : Return variable vuiFRGDimension																								*****
 ************************************************************************************************************************************************/
-inline vector <unsigned int> CFragment::FRGGetDimensions() {
+inline vector <unsigned int> CFragment::FRGGetDimensions() const {
 
 	return vuiFRGDimension;
 }
@@ -236,7 +236,7 @@ inline vector <unsigned int> CFragment::FRGGetDimensions() {
 ***** Output : puiFRGMinMax : std::pair<unsigned int, unsigned int>																			*****
 ***** Effects : Return variable puiFRGMinMax																								*****
 ************************************************************************************************************************************************/
-inline std::pair<unsigned int, unsigned int> CFragment::FRGGetMinMax() {
+inline std::pair<unsigned int, unsigned int> CFragment::FRGGetMinMax() const {
 
 	return puiFRGMinMax;
 }
@@ -249,7 +249,7 @@ inline std::pair<unsigned int, unsigned int> CFragment::FRGGetMinMax() {
 ***** Output : uiMax : unsigned int																											*****
 ***** Effects : Return variable puiFRGMinMax's second element 																				*****
 ************************************************************************************************************************************************/
-inline unsigned int CFragment::FRGGetMax() {
+inline unsigned int CFragment::FRGGetMax() const {
 
 	return puiFRGMinMax.second;
 }
@@ -262,7 +262,7 @@ inline unsigned int CFragment::FRGGetMax() {
 ***** Output : uiMin : unsigned int																											*****
 ***** Effects : Return variable puiFRGMinMax's first element 																				*****
 ************************************************************************************************************************************************/
-inline unsigned int CFragment::FRGGetMin() {
+inline unsigned int CFragment::FRGGetMin() const {
 
 	return puiFRGMinMax.first;
 }
@@ -328,7 +328,7 @@ inline void CFragment::FRGSetMax(unsigned int uiMax) {
 ***** Output : uiFRGConnexite : unsigned int																								*****
 ***** Effects : Return variable uiFRGConnexite					 																			*****
 ************************************************************************************************************************************************/
-inline unsigned int CFragment::FRGGetConnexite() {
+inline unsigned int CFragment::FRGGetConnexite() const {
 
 	return uiFRGConnexite;
 }
@@ -354,7 +354,7 @@ inline void CFragment::FRGSetConnexite(unsigned int uiNewConnexite) {
 ***** Output : bHomogeneity : boolean																										*****
 ***** Effects : Return True/False if the Fragment are uniform or not					 													*****
 ************************************************************************************************************************************************/
-inline bool CFragment::FRGHomogeneity(const unsigned int uiHomogeneite) {
+inline bool CFragment::FRGHomogeneity(const unsigned int uiHomogeneite) const {
 
 	//Min and Max Set
 	CGrayScale GSLMini = (*pmaGSLFRGMultiArray)[vuiFRGConer[0]][vuiFRGConer[1]][vuiFRGConer[2]];
@@ -398,7 +398,7 @@ inline bool CFragment::FRGHomogeneity(const unsigned int uiHomogeneite) {
 ***** Output : puiMinMax : std::pair<unsigned int, unsigned int> *																			*****
 ***** Effects : Return Min/Max if the Fragment are uniform, nullptr else				 													*****
 ************************************************************************************************************************************************/
-inline std::pair<unsigned int, unsigned int> * CFragment::FRGHomogeneityV2(const unsigned int uiHomogeneite) {
+inline std::pair<unsigned int, unsigned int> * CFragment::FRGHomogeneityV2(const unsigned int uiHomogeneite) const {
 
 	//Min and Max Set
 	CGrayScale GSLMini = (*pmaGSLFRGMultiArray)[vuiFRGConer[0]][vuiFRGConer[1]][vuiFRGConer[2]];
@@ -445,7 +445,7 @@ inline std::pair<unsigned int, unsigned int> * CFragment::FRGHomogeneityV2(const
 ***** Output : puiMinMax : std::pair <unsigned int, unsigned int>																			*****
 ***** Effects : Return the Min/Max of the Fragment										 													*****
 ************************************************************************************************************************************************/
-inline std::pair<unsigned int, unsigned int> CFragment::FRGFindMinMax() {
+inline std::pair<unsigned int, unsigned int> CFragment::FRGFindMinMax() const {
 
 	//Min and Max Set
 	CGrayScale GSLMin = (*pmaGSLFRGMultiArray)[vuiFRGConer[0]][vuiFRGConer[1]][vuiFRGConer[2]];
@@ -482,7 +482,7 @@ inline std::pair<unsigned int, unsigned int> CFragment::FRGFindMinMax() {
 ***** Output : vbDimSplitable : std::vector<bool>																							*****
 ***** Effects : Return boolean for each direction (true if is splitable, false else)										 				*****
 ************************************************************************************************************************************************/
-inline std::vector<bool> CFragment::FRGIsSplitable(const unsigned int uiSeuilMin) {
+inline std::vector<bool> CFragment::FRGIsSplitable(const unsigned int uiSeuilMin) const {
 
 	//Exception Management if uiSeuilMin = 0
 	if (uiSeuilMin == 0) {
