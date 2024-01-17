@@ -38,8 +38,13 @@ CException::CException( int value) {
 CException::CException(int iValue, const char * pcMessage)
 {
 	iEXCvalue = iValue;
-	pcEXCMessage = new char[strlen(pcMessage) + 1];
-	strcpy_s(pcEXCMessage, strlen(pcMessage) + 1, pcMessage);
+	if (pcMessage) {
+		pcEXCMessage = new char[strlen(pcMessage) + 1];
+		strcpy_s(pcEXCMessage, strlen(pcMessage) + 1, pcMessage);
+	}
+	else {
+		pcEXCMessage = nullptr;
+	}
 }
 
 /**********************************************************************************************
@@ -50,11 +55,11 @@ CException::CException(int iValue, const char * pcMessage)
  ***** Output:  None                                                                      *****
  ***** Postcondition : Create an CException Object with copied value from inputed one     *****
  **********************************************************************************************/
-CException::CException(const CException & EXCparam)
-{
-	iEXCvalue = EXCparam.iEXCvalue;
-	pcEXCMessage = new char[strlen(EXCparam.pcEXCMessage) + 1];
-	strcpy_s(pcEXCMessage, strlen(EXCparam.pcEXCMessage) + 1, EXCparam.pcEXCMessage);
+CException::CException(const CException& EXCparam) : iEXCvalue(EXCparam.iEXCvalue), pcEXCMessage(nullptr) {
+	if (EXCparam.pcEXCMessage) {
+		pcEXCMessage = new char[strlen(EXCparam.pcEXCMessage) + 1];
+		strcpy_s(pcEXCMessage, strlen(EXCparam.pcEXCMessage) + 1, EXCparam.pcEXCMessage);
+	}
 }
 
 /**************************************************************************
