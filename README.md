@@ -85,7 +85,6 @@ preproimg=true
 splitimg=true
 mergeimg=true
 details=true
-details=false
 ```
 
 ![illustration Traitement](https://cdn.discordapp.com/attachments/812733378520547378/1196544476227837972/illustrationTraitement.png?ex=65b803e1&is=65a58ee1&hm=327048c39cef9439db2eea99bfb0ddc525b5a977daa3ab966db7f126b56c7276&)
