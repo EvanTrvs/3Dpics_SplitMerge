@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
     // Check the number of command line arguments
     if (argc < 5 || argc > 6) {
         // Display usage information and exit with an error code if the number of arguments is incorrect
-        std::cerr << "Usage: " << argv[0] << " [homogeneity criterion: float between 0 and 1] [segmentation threshold: integer between 1 and 1000] [Input NIfTI image.nii] [Output NIfTI image.nii] [optional settings.txt]" << std::endl;
+        std::cerr << "Usage: " << "./executable.exe" << "[homogeneity criterion : float between 0 and 1] [segmentation threshold : integer between 1 and 1000] [Input NIfTI image.nii] [Output NIfTI image.nii] [optional settings.txt]" << std::endl;
         return 1;
     }
 
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
     catch (const CException& EXCparam) {
         // Handle exceptions by displaying an error message and usage information, then exit with an error code
         std::cerr << "Error: " << EXCparam << std::endl;
-        std::cerr << "\nUsage: " << argv[0] << " [homogeneity criterion: float between 0 and 1] [segmentation threshold: integer between 1 and 1000] [Input NIfTI image.nii] [Output NIfTI image.nii] [optional settings.txt]" << std::endl;
+        std::cerr << "\nUsage: " << "./executable.exe" << " [homogeneity criterion: float between 0 and 1] [segmentation threshold: integer between 1 and 1000] [Input NIfTI image.nii] [Output NIfTI image.nii] [optional settings.txt]" << std::endl;
         return EXCparam.EXCgetValue();
     }
 
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
         catch (const CException EXCparam) {
             // Handle exceptions related to advanced settings with appropriate error messages and usage information, then exit with an error code
             std::cerr << "Error: " << EXCparam << std::endl;
-            std::cerr << "\nUsage: " << argv[0] << errorMessageAdvancedSettingsFile << std::endl;
+            std::cerr << "\nUsage: " << "./executable.exe" << errorMessageAdvancedSettingsFile << std::endl;
             return EXCparam.EXCgetValue();
         }
     }

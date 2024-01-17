@@ -290,11 +290,19 @@ inline void readConfigFile(const std::string& filename,
  * Postcondition: Throws CException on invalid input, otherwise returns the processed value
  ************************************************************/
 inline float processHomogeneityCriterion(const char* arg) {
-    float value = std::stof(arg);
-    if (value < 0.0f || value > 1.0f) {
-        throw CException(1, "Invalid homogeneity criterion value. It should be a float between 0 and 1.");
+    try {
+        float value = std::stof(arg);
+        if (value < 0.0f || value > 1.0f) {
+            throw CException(1, "Invalid homogeneity criterion value. It should be a float between 0 and 1.");
+        }
+        return value;
     }
-    return value;
+    catch (const std::invalid_argument&) {
+        throw CException(3, "Invalid homogeneity criterion value. It should be a float between 0 and 1.");
+    }
+    catch (const CException EXCparam) {
+        throw EXCparam;
+    }
 }
 
 /************************************************************
@@ -306,11 +314,19 @@ inline float processHomogeneityCriterion(const char* arg) {
  * Postcondition: Throws CException on invalid input, otherwise returns the processed value
  ************************************************************/
 inline int processSegmentationThreshold(const char* arg) {
-    int value = std::stoi(arg);
-    if (value < 1 || value > 1000) {
-        throw CException(2, "Invalid segmentation threshold value. It should be an integer between 1 and 1000.");
+    try {
+        int value = std::stoi(arg);
+        if (value < 1 || value > 1000) {
+            throw CException(2, "Invalid segmentation threshold value. It should be an integer between 1 and 1000.");
+        }
+        return value;
     }
-    return value;
+    catch (const std::invalid_argument&) {
+        throw CException(3, "Invalid segmentation threshold value. It should be an integer between 1 and 1000.");
+    }
+    catch (const CException EXCparam) {
+        throw EXCparam;
+    }
 }
 
 /************************************************************
@@ -322,12 +338,21 @@ inline int processSegmentationThreshold(const char* arg) {
  * Postcondition: Throws CException on invalid input, otherwise returns the processed value
  ************************************************************/
 inline std::string processInputNifti(const char* arg) {
-    std::string value(arg);
+    try {
+        std::string value(arg);
 
-    if (!hasExtension(value, ".nii") && !isValidMireFormat(arg)) {
+        if (!hasExtension(value, ".nii") && !isValidMireFormat(arg)) {
+            throw CException(3, "Invalid input NIfTI image. It should have the extension '.nii'. or 'mireX' X an integer");
+        }
+
+        return value;
+    }
+    catch (const std::invalid_argument&) {
         throw CException(3, "Invalid input NIfTI image. It should have the extension '.nii'. or 'mireX' X an integer");
     }
-    return value;
+    catch (const CException EXCparam) {
+        throw EXCparam;
+    }
 }
 
 /************************************************************
@@ -339,11 +364,19 @@ inline std::string processInputNifti(const char* arg) {
  * Postcondition: Throws CException on invalid input, otherwise returns the processed value
  ************************************************************/
 inline std::string processOptionalSettingsFile(const char* arg) {
-    std::string value(arg);
-    if (!hasExtension(value, ".txt")) {
-        throw CException(5, "Invalid optional settings file. It should have the extension '.txt'.");
+    try {
+        std::string value(arg);
+        if (!hasExtension(value, ".txt")) {
+            throw CException(5, "Invalid optional settings file. It should have the extension '.txt'.");
+        }
+        return value;
     }
-    return value;
+    catch (const std::invalid_argument&) {
+        throw CException(3, "Invalid optional settings file. It should have the extension '.txt'.");
+    }
+    catch (const CException EXCparam) {
+        throw EXCparam;
+    }
 }
 
 
@@ -489,7 +522,7 @@ inline unsigned int extractMireSize(const std::string& input) {
             int extractedValue = std::stoi(input.substr(4));
 
             // Check if the conversion to unsigned int is possible
-            if (extractedValue < 1 || extractedValue > 10000) {
+            if (extractedValue < 1 || extractedValue > 32000) {
                 throw CException(1, "Extracted value is out of range. It should be between 1 and 10000.");
             }
 

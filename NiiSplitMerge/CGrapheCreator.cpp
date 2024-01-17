@@ -1110,6 +1110,34 @@ void CGrapheCreator::GCRLinkVertices(std::pair<unsigned int, unsigned int> puiPa
 }
 
 /********************************************************************************************************************************************************
+***** Concatenate : Method for concatenate number																									*****
+*********************************************************************************************************************************************************
+***** Entrée : uiNumber1, uiNumber2 : unsigned int																									*****
+***** Precondition : Nothing																														*****
+***** Output : uiNumberConca : unsigned int																											*****
+***** Effects : Concatenate two number																												*****
+********************************************************************************************************************************************************/
+unsigned int Concatenate(unsigned int uiNumber1, unsigned int uiNumber2)
+{
+	// Convert both the integers to string
+	std::string s1 = std::to_string(uiNumber1);
+	std::string s2 = std::to_string(uiNumber2);
+
+	// Concatenate both strings
+	std::string s = s1 + s2;
+
+	// Convert the concatenated string to unsigned int
+	try {
+		unsigned int uiNumberConca = std::stoul(s); // Use std::stoul for unsigned int
+		return uiNumberConca;
+	}
+	catch (const std::out_of_range&) {
+		// Handle out of range exception
+		throw CException(TAILLE_DIM,"Concatenated value out of range for unsigned int.");
+	}
+}
+
+/********************************************************************************************************************************************************
 ***** GCRBestCompatibility : Method for find the best neighbor pair																					*****
 *********************************************************************************************************************************************************
 ***** Entrée : puipuiFacteurFusionnable : std::pair<unsigned int, std::pair<unsigned int, unsigned int>> &											*****
@@ -1118,31 +1146,30 @@ void CGrapheCreator::GCRLinkVertices(std::pair<unsigned int, unsigned int> puiPa
 ***** Output : None																																	*****
 ***** Effects : Find the best compatibility of a neighbor pair																						*****
 ********************************************************************************************************************************************************/
-void CGrapheCreator::GCRBestCompatibility(std::pair<unsigned int, std::pair<unsigned int, unsigned int>> & puipuiFacteurFusionnable, std::pair<unsigned int, unsigned int> & puiPair, unsigned int uiHomogeneite) {
+void CGrapheCreator::GCRBestCompatibility(std::pair<unsigned int, std::pair<unsigned int, unsigned int>>& puipuiFacteurFusionnable, std::pair<unsigned int, unsigned int>& puiPair, unsigned int uiHomogeneite) {
 
 	//Recovering fragments
 	BGLGraphe::vertex_descriptor vdFragment1 = vvdGPCVertex_Desc[puiPair.first], vdFragment2 = vvdGPCVertex_Desc[puiPair.second];
 
 	//Calculation of Min/Max difference
-	unsigned int uiDiffMax = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMax() - alGPCGraphe[vdFragment2].FRGGetMax()));
-	unsigned int uiDiffMin = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMin() - alGPCGraphe[vdFragment2].FRGGetMin()));
+	unsigned int uiDiff1 = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMax() - alGPCGraphe[vdFragment2].FRGGetMin()));
+	unsigned int uiDiff2 = std::abs(static_cast<int>(alGPCGraphe[vdFragment2].FRGGetMax() - alGPCGraphe[vdFragment1].FRGGetMin()));
 
 	//If these differences respect homogeneity
-	if (uiDiffMax <= uiHomogeneite && uiDiffMin <= uiHomogeneite) {
+	if (uiDiff1 <= uiHomogeneite && uiDiff2 <= uiHomogeneite) {
 
 		/* Determines the best compatibility factor => the lower the uiCompatibilite, the higher the mergeability factor */
-		unsigned int uiCompatibilite = uiDiffMax + uiDiffMin;
+		unsigned int uiCompatibilite = uiDiff1 + uiDiff2;
 
 		//Compare with the best or Check in the case of a tie to make a choice
-		unsigned int uiSommeBestBest = puipuiFacteurFusionnable.second.first + puipuiFacteurFusionnable.second.second;
-		unsigned int uiSommePaire = puiPair.first + puiPair.second;
+		unsigned int uiBestBest = Concatenate(puipuiFacteurFusionnable.second.first, puipuiFacteurFusionnable.second.second);
+		unsigned int uiPaire = Concatenate(puiPair.first, puiPair.second);
 
-			
-		if ((puipuiFacteurFusionnable.first > uiCompatibilite) || (puipuiFacteurFusionnable.first == uiCompatibilite && uiSommeBestBest > uiSommePaire)) {
+
+		if ((puipuiFacteurFusionnable.first > uiCompatibilite) || (puipuiFacteurFusionnable.first == uiCompatibilite && uiBestBest > uiPaire)) {
 
 			//Remplace the best
 			puipuiFacteurFusionnable = std::pair<unsigned int, std::pair<unsigned int, unsigned int>>(uiCompatibilite, puiPair);
-
 		}
 	}
 }
@@ -1156,8 +1183,8 @@ void CGrapheCreator::GCRBestCompatibility(std::pair<unsigned int, std::pair<unsi
 ***** Output : None																																	*****
 ***** Effects : Starting each thread for reduce analyze time																						*****
 ********************************************************************************************************************************************************/
-void CGrapheCreator::GCRThreadForMerge(std::pair<unsigned int, std::pair<unsigned int, unsigned int>> & puipuiFacteurFusionnable, unsigned int uiHomogeneite, unsigned int uiDebut, unsigned int uiFin) {
-	
+void CGrapheCreator::GCRThreadForMerge(std::pair<unsigned int, std::pair<unsigned int, unsigned int>>& puipuiFacteurFusionnable, unsigned int uiHomogeneite, unsigned int uiDebut, unsigned int uiFin) {
+
 	//Initialization of the storage of the best pair
 	std::pair<unsigned int, std::pair<unsigned int, unsigned int>> puipuiInit(std::numeric_limits<unsigned int>::max(), std::pair<unsigned int, unsigned int>());
 	std::pair<unsigned int, std::pair<unsigned int, unsigned int>> localBest(puipuiInit);
@@ -1172,11 +1199,11 @@ void CGrapheCreator::GCRThreadForMerge(std::pair<unsigned int, std::pair<unsigne
 		std::lock_guard<std::mutex> lock(GPCMutex);
 
 		//Storage for comparaison
-		unsigned int uiSommeBestBest = puipuiFacteurFusionnable.second.first + puipuiFacteurFusionnable.second.second;
-		unsigned int uiSommeLocalBestBest = localBest.second.first + localBest.second.second;
+		unsigned int uiBestBest = Concatenate(puipuiFacteurFusionnable.second.first, puipuiFacteurFusionnable.second.second);
+		unsigned int uiLocalBestBest = Concatenate(localBest.second.first, localBest.second.second);
 
 		/* Comparaison between other threads and this one */
-		if ((localBest.first < puipuiFacteurFusionnable.first) || (localBest.first == puipuiFacteurFusionnable.first && uiSommeBestBest > uiSommeLocalBestBest)) {
+		if ((localBest.first < puipuiFacteurFusionnable.first) || (localBest.first == puipuiFacteurFusionnable.first && uiBestBest > uiLocalBestBest)) {
 			puipuiFacteurFusionnable = localBest;
 		}
 	}
@@ -1327,12 +1354,12 @@ void CGrapheCreator::GCRMergeSansChoix(unsigned int uiHomogeneite) {
 			//recovery of fragments
 			vdFragment1 = vvdGPCVertex_Desc[puiPair.first], vdFragment2 = vvdGPCVertex_Desc[puiPair.second];
 
-			//Calcul Min/Max difference
-			unsigned int uiDiffMax = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMax() - alGPCGraphe[vdFragment2].FRGGetMax()));
-			unsigned int uiDiffMin = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMin() - alGPCGraphe[vdFragment2].FRGGetMin()));
+			//Calculation of Min/Max difference
+			unsigned int uiDiff1 = std::abs(static_cast<int>(alGPCGraphe[vdFragment1].FRGGetMax() - alGPCGraphe[vdFragment2].FRGGetMin()));
+			unsigned int uiDiff2 = std::abs(static_cast<int>(alGPCGraphe[vdFragment2].FRGGetMax() - alGPCGraphe[vdFragment1].FRGGetMin()));
 
-			//if difference respect homogenity
-			if (uiDiffMax <= uiHomogeneite && uiDiffMin <= uiHomogeneite) {
+			//If these differences respect homogeneity
+			if (uiDiff1 <= uiHomogeneite && uiDiff2 <= uiHomogeneite) {
 				puiVoisinFusionnable = puiPair;
 				break; //take the first one
 			}
