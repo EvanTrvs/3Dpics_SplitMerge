@@ -416,13 +416,10 @@ inline std::string extractOutputNifti(const char* arg) {
     if (lastBackslash > 99999999) lastBackslash = 0;
     size_t lastSeparator = std::max(lastSlash, lastBackslash);
 
-    if (lastSeparator) {
+    if (lastSeparator != 0) {
         sPathFile = sPathFile.substr(lastSeparator + 1);
     }
-    else {
-        sPathFile = ""; // No path found
-    }
-
+    
     return sPathFile;
 }
 
