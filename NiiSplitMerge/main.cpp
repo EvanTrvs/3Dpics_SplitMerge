@@ -22,14 +22,14 @@
  ***** Project Information: Image Segmentation 3D *****
  *****************************************************
  ***** Authors:
- ***** - Evan TORTEVOIS
- ***** - Thibaud SCRIBE
+ ***** - EvanTrvs
+ ***** - Thibaud
  *****
  ***** Project Framework:
- ***** This project is part of the 4th-year Programming and Software Engineering curriculum at École Polytech Tours.
+ ***** This project is part of the 4th-year Programming and Software Engineering curriculum at Ã‰cole Polytech Tours.
  *****
  ***** Project Purpose:
- ***** The primary goal of this programming project is to implement and optimize the "Split and Merge" image segmentation algorithm for three-dimensional (3D) medical images. The project falls within the scope of the Programming and Software Engineering project in the computer engineering curriculum at École Polytech Tours.
+ ***** The primary goal of this programming project is to implement and optimize the "Split and Merge" image segmentation algorithm for three-dimensional (3D) medical images. The project falls within the scope of the Programming and Software Engineering project in the computer engineering curriculum at Ã‰cole Polytech Tours.
  *****
  ***** Image Segmentation:
  ***** Image segmentation is a crucial process that involves grouping pixels based on certain criteria, forming distinct regions. This automation allows for more precise analysis of medical images, aiding in the detection of tumors and anomalies.
@@ -200,7 +200,7 @@ int main(int argc, char* argv[]) {
     }
 
     CNiftiImageData<uint16_t>* NFIsourceData = new CNiftiImageData<uint16_t>(*NFIsource);
-    try {       //lecture données nifti
+    try {       //lecture donnÃ©es nifti
         unsigned int uiDataType = NFIsource->NFIgetDataType();
 
         if (uiMireSize != 0) {
