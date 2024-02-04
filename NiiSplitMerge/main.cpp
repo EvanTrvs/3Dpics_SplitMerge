@@ -25,9 +25,6 @@
  ***** - EvanTrvs
  ***** - Thibaud
  *****
- ***** Project Framework:
- ***** This project is part of the 4th-year Programming and Software Engineering curriculum at École Polytech Tours.
- *****
  ***** Project Purpose:
  ***** The primary goal of this programming project is to implement and optimize the "Split and Merge" image segmentation algorithm for three-dimensional (3D) medical images. The project falls within the scope of the Programming and Software Engineering project in the computer engineering curriculum at École Polytech Tours.
  *****
