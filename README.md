@@ -14,6 +14,7 @@ L'algorithme "Split and Merge" est un procédé de traitement d'image utilisé p
 Le format d’image traité est le NIfTI (Neuroimaging Informatics Technology Initiative). Employé pour stocker des données d'imagerie médicale, il offre un support aux images multidimensionnelles. Il se présente sous la forme d'extensions telles que .nii ou .nii.gz, et des applications accessibles, telles qu'ITK-SNAP, permettent la lecture de ce format.
 
 ![illustration Traitement](https://cdn.discordapp.com/attachments/812733378520547378/1196545901016125591/image.png?ex=65b80535&is=65a59035&hm=d9f1736bf77f8d8a3cdf7b4ba41f857157f140789590e2a19cb4e3d0c7e3e7ae&)
+![illustration cerveau caille seg](https://media.discordapp.net/attachments/1087514695268847656/1203812297139556446/bellecailleseg.png?ex=65d27491&is=65bfff91&hm=2bd2e4e6b7b7261599ca77562816cf1a0cfa6d3133be8013f6b7874592bcc531&=&format=webp&quality=lossless)
 
 ## Utilisation
 ### Installation
