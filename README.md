@@ -2,7 +2,7 @@
 
 ## Projet de programmation
 ### Introduction
-Ce projet vise à mettre en œuvre et optimiser l'algorithme de segmentation d'image "Split and Merge" pour des images médicales en trois dimensions (3D). Il s'inscrit dans le cadre du projet de Programmation et de Génie Logiciel.
+Ce projet vise à mettre en œuvre et optimiser l'algorithme de segmentation d'image "Split and Merge" pour des images médicales en trois dimensions (3D). Il s'inscrit dans le cadre d'un projet de Programmation et de Génie Logiciel.
 
 ### Segmentation d’image
 La segmentation d'image est un processus essentiel qui consiste à regrouper des pixels en fonction de certains critères, formant ainsi des régions distinctes. Cette automatisation permet une analyse plus précise des images médicales, facilitant la détection de tumeurs et d'anomalies.
@@ -75,7 +75,7 @@ config.txt :
 prepro=0,10
 split=1
 neighbourg=2
-merge=3
+merge=2
 
 # Commentaire d'exemple
 preproimg=true
