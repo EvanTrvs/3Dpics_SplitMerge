@@ -1,11 +1,8 @@
 # Développement et Optimisation en C++ de l'Algorithme 3D de Segmentation d'Image "Split and Merge" avec image NIfTI
 
-### Auteurs
-Evan TORTEVOIS et Thibaud SCRIBE
-
 ## Projet de programmation
 ### Introduction
-Ce projet vise à mettre en œuvre et optimiser l'algorithme de segmentation d'image "Split and Merge" pour des images médicales en trois dimensions (3D). Il s'inscrit dans le cadre du projet de Programmation et de Génie Logiciel de 4ème année du cursus d'ingénierie informatique à l'École Polytech Tours.
+Ce projet vise à mettre en œuvre et optimiser l'algorithme de segmentation d'image "Split and Merge" pour des images médicales en trois dimensions (3D). Il s'inscrit dans le cadre du projet de Programmation et de Génie Logiciel.
 
 ### Segmentation d’image
 La segmentation d'image est un processus essentiel qui consiste à regrouper des pixels en fonction de certains critères, formant ainsi des régions distinctes. Cette automatisation permet une analyse plus précise des images médicales, facilitant la détection de tumeurs et d'anomalies.
@@ -108,3 +105,6 @@ Ce projet, développé en C++14 (/std:c++14) et compilé avec GNU G++. Le code s
 | Merge | 0 | Lien des fragments des paires de voisins fusionnable | Analyse des paires de voisins fusionnables afin de les regrouper dans une même connexité (dans un graphe).
 | Merge | 1 | Lien des fragments des paires de voisins fusionnable avec Threads | Analyse des paires de voisins fusionnables afin de les regrouper dans une même connexité (dans un graphe). Les threads sont exploités afin de limiter certains temps de calcul.
 | Merge | 2 | Lien des fragments des paires de voisins fusionnable sans choix | Analyse des paires de voisins fusionnables afin de les regrouper dans une même connexité (dans un graphe). Cette version ne prend que la première paire homogène de la liste à chaque itération. Nous ne respectons donc pas le déterminisme.
+
+## Auteurs
+[EvanTrvs](https://github.com/EvanTrvs) et Thibaud, 2023
